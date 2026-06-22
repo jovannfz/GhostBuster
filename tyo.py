@@ -9,4 +9,8 @@ if __name__ == "__main__":
         messagebox.showerror("error fatal",
             f"gagal menjalankan aplikasi:\n\n"{e}\n\n"
             "pastikan mysql sudah berjalan dan konfigurasi\n"
+            "DB_CONFIG di bagian atas file sudah benar.")
+    except Exception:
+        pass
+
             
