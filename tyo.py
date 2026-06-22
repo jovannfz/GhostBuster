@@ -1,64 +1,68 @@
-APP CONTROLLER 
+leaderboard 
 
-class app(tk.Tk):
-    width = 800
-    height = 600
+class LeaderboardScreen(BaseScreen):
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        self._build()
 
-    def __init__(self):
-        super().__init__()
-        self.title("GhostBusters 👻")
-        self.geometry(f"{self.WIDTH}x{self.HEIGHT}+0+0")
-        self.resizable(False, False)
-        self.configure(bg="#0a0f1e")
+    def _build(self):
+        self.columnconfigure(0, weight=1)
 
-        self.current_user = None
+        tk.Label(self, text="🏆  LEADERBOARD",
+                 font=("Courier New", 36, "bold"),
+                 bg=self.BG, fg=self.C_ACC).grid(row=0, column=0, pady=(60, 6))
+        tk.Label(self, text="Top 10 Ghost Buster Terbaik",
+                 font=self.F_BODY, bg=self.BG, fg=self.C_MUT).grid(row=1, column=0, pady=(0, 16))
 
-        container = tk.Frame(self, bg="#0a0f1e")
-        container.pack(fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1) 
+        tbl  = tk.Frame(self, bg=self.C_CARD)
+        tbl.grid(row=2, column=0, padx=80)
 
-        self.frames = {}
-        for Cls in [AuthScreen, MenuScreen, GameScreen,
-                    GameOverScreen, LeaderboardScreen, SettingsScreen]:
-            name = Cls.__name__
-            f    = Cls(parent=container, controller=self)
-            self.frames[name] = f
-            f.grid(row=0, column=0, sticky="nsew")
+        headers = ["#",  "Username", "Skor", "Level", "Tanggal"]
+        col_w   = [4,    18,          12,      8,       18]
+        for col, (h, w) in enumerate(zip(headers, col_w)):
+            tk.Label(tbl, text=h, font=("Courier New", 11, "bold"),
+                     bg="#1e3a5c", fg=self.C_ACC, width=w, pady=5).grid(
+                row=0, column=col, padx=1, pady=(0, 2), sticky="ew")
 
-        self.show("AuthScreen")
-        self.protocol("WM_DELETE_WINDOW", self._on_close) 
-    
-    def show(self, name: str):
-        frame = self.frames[name]
-        frame.tkraise()
-        frame.on_show()
+        self._rows = []
+        for r in range(10):
+            row_w = []
+            bg = self.C_CARD if r % 2 == 0 else "#0a1528"
+            for col, w in enumerate(col_w):
+                lbl = tk.Label(tbl, text="—", font=self.F_SM,
+                               bg=bg, fg=self.C_TXT, width=w, pady=4)
+                lbl.grid(row=r + 1, column=col, padx=1, pady=1, sticky="ew")
+                row_w.append(lbl)
+            self._rows.append(row_w)
 
-    def set_user(self, user):
-        self.current_user = user
+        tk.Button(self, text="🔄  Refresh", font=self.F_BODY,
+                  bg="#1e4d2b", fg=self.C_TXT, relief="flat", cursor="hand2",
+                  width=14, command=self._load).grid(row=3, column=0, pady=(22, 6))
+        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_BODY,
+                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
+                  width=28, command=lambda: self.controller.show("MenuScreen")).grid(
+            row=4, column=0, pady=4)
 
-    def _on_close(self):
-        if messagebox.askokcancel("Keluar", "Yakin ingin keluar dari GhostBusters?"):
-            self.destroy()
+    def _load(self):
+        try:
+            data = db_get_leaderboard(10)
+        except Exception:
+            data = []
 
-    def quit(self):
-        self._on_close() 
+        medals = ["🥇", "🥈", "🥉"] + ["  "] * 7
+        for i, widgets in enumerate(self._rows):
+            if i < len(data):
+                r   = data[i]
+                rank = medals[i] if i < 3 else str(i + 1)
+                vals = [rank, r["username"], f"{r['score']:,}",
+                        str(r["level_reached"]), r["tanggal"]]
+                fg = (self.C_ACC if i == 0 else "#c0c0c0" if i == 1 else
+                      "#cd7f32" if i == 2 else self.C_TXT)
+            else:
+                vals = [str(i + 1), "—", "—", "—", "—"]
+                fg   = self.C_MUT
+            for lbl, val in zip(widgets, vals):
+                lbl.config(text=val, fg=fg)
 
-
-
-BAGIAN ENTRY POINT
-
-if __name__ == "__main__":
-    try:
-        app().mainloop()
-    except Exception as e:    
-        import traceback; traceback.print_exc()
-    try:
-        messagebox.showerror("error fatal",
-            f"gagal menjalankan aplikasi:\n\n"{e}\n\n"
-            "pastikan mysql sudah berjalan dan konfigurasi\n"
-            "DB_CONFIG di bagian atas file sudah benar.")
-    except Exception:
-        pass
-
-            
+    def on_show(self):
+        self._load()
