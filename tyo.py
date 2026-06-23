@@ -65,4 +65,4 @@ class LeaderboardScreen(BaseScreen):
                 lbl.config(text=val, fg=fg)
 
     def on_show(self):
-        self._load()
+        self._load() 
