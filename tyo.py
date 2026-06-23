@@ -66,3 +66,23 @@ class LeaderboardScreen(BaseScreen):
 
     def on_show(self):
         self._load() 
+
+
+class BaseScreen(tk.Frame):
+    BG      = "#0a0f1e"
+    C_PRI   = "#a8d8ff"
+    C_ACC   = "#f9d423"
+    C_DNG   = "#ff416c"
+    C_TXT   = "#e8e8e8"
+    C_MUT   = "#666"
+    C_CARD  = "#0d1a2e"
+    F_TITLE = ("Courier New", 42, "bold")
+    F_HEAD  = ("Courier New", 20, "bold")
+    F_BODY  = ("Courier New", 15)
+    F_SM    = ("Courier New", 12)
+
+    def __init__(self, parent, controller):
+        super().__init__(parent, bg=self.BG)
+        self.controller = controller
+
+    def on_show(self): pass 
