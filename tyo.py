@@ -59,3 +59,5 @@ class GameOverScreen(BaseScreen):
             self._title.config(text="GAME OVER", fg=self.C_DNG)
         self._sc_var.set(f"Skor Akhir: {self._score:,}")
         self._lv_var.set(f"Level Tercapai: {self._level} / 3") 
+
+def on_hide(self): 
