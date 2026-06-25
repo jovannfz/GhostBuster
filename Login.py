@@ -63,3 +63,61 @@ def db_get_progress(user_id: int):
     rows = _execute_query(
         "SELECT * FROM game_progress WHERE user_id=%s", (user_id,), fetch=True)
     return rows[0] if rows else None
+
+LEVEL_CFG = {
+    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120, "hantu": 4,  "mult": 1.0},
+    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 7,  "mult": 1.5},
+    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 50,  "hantu": 11, "mult": 2.0},
+}
+
+THEME = {
+    1: {"sky": "#1a3a6c", "ground": "#2d5a1b", "platform": "#5a3a1a", "grass": "#3a8a2a", "label": "#a8ff78", "moon": "#c8c8c8"},
+    2: {"sky": "#0d1a2e", "ground": "#1a1a2e", "platform": "#3a2a0a", "grass": "#1a3a1a", "label": "#f9d423", "moon": "#888899"},
+    3: {"sky": "#0a0a1e", "ground": "#1a0a0a", "platform": "#2a0a0a", "grass": "#3a0a0a", "label": "#ff416c", "moon": "#665566"},
+}
+
+GHOST_TYPES = [
+    {"color": "#e8e8f0", "speed_mult": 1.0, "hp": 1, "score": 100, "name": "Normal"},
+    {"color": "#f8c0d8", "speed_mult": 1.6, "hp": 1, "score": 80,  "name": "Cepat"},
+    {"color": "#c0b0f0", "speed_mult": 0.6, "hp": 3, "score": 200, "name": "Kuat"},
+]
+
+GROUND_Y = 380   # y tanah utama di canvas
+P_FLOOR  = 346   # y pemain saat berdiri di tanah (GROUND_Y - player.H)
+
+
+class LevelManager:
+    def __init__(self):
+        self.current = 1
+        self.max     = 3
+
+    def cfg(self):    return LEVEL_CFG[self.current]
+    def theme(self):  return THEME[self.current]
+    def is_last(self): return self.current == self.max
+    def reset(self):   self.current = 1
+
+    def next(self) -> bool:
+        if self.current < self.max:
+            self.current += 1
+            return True
+        return False
+
+class ScoreManager:
+    BASE_COIN = 50
+    TIME_MULT = 5
+
+    def __init__(self, mult=1.0):
+        self.mult  = mult
+        self.total = 0
+
+    def ghost_kill(self, base=100):
+        g = int(base * self.mult); self.total += g; return g
+
+    def coin(self):
+        g = int(self.BASE_COIN * self.mult); self.total += g; return g
+
+    def time_bonus(self, secs):
+        b = int(secs * self.TIME_MULT * self.mult); self.total += b; return b
+
+    def penalty(self, amt=50):
+        self.total = max(0, self.total - amt)
