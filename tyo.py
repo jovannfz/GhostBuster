@@ -124,3 +124,7 @@ class SettingsScreen(BaseScreen):
         card = tk.Frame(self, bg=self.C_CARD, padx=70, pady=32)
         card.grid(row=1, column=0, pady=8)
         card.columnconfigure(1, weight=1) 
+
+        tk.Label(card, text="👤  Profil Pemain",
+                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_ACC).grid(
+            row=0, column=0, columnspan=2, pady=(0, 14), sticky="w") 
