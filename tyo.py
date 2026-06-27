@@ -104,3 +104,19 @@ class LeaderboardScreen(BaseScreen):
 
     def on_show(self):
         self._load() 
+
+# ══════════════════════════════════════════════════════════════════
+#  SCREEN — PENGATURAN & PROFIL
+# ══════════════════════════════════════════════════════════════════ 
+
+class SettingsScreen(BaseScreen):
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        self._build()
+
+    def _build(self):
+        self.columnconfigure(0, weight=1)
+
+        tk.Label(self, text="⚙  PENGATURAN",
+                 font=("Courier New", 36, "bold"),
+                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(60, 24)) 
