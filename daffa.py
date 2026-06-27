@@ -155,5 +155,31 @@
             self.sc_mgr.total, self.lv_mgr.current, won)
         self.controller.show("GameOverScreen")
 
+def _toggle_pause(self):
+        if not self._running or self._transition: return
+        self._paused = not self._paused
+        self._pause_btn.config(text="▶ Lanjut" if self._paused else "⏸ Pause")
+        if not self._paused: self._loop()
+
+    def _back_menu(self):
+        self._running = False; self._transition = False
+        self._cancel()
+        self.controller.show("MenuScreen")
+
+    def _cancel(self):
+        if self._after:
+            self.after_cancel(self._after)
+            self._after = None
+
+    def _timer_tick(self):
+        if not self._running: return
+        if not self._paused and not self._transition:
+            if self._timer > 0:
+                self._timer -= 1
+                self._tm_var.set(f"⏱ {self._timer}")
+            else:
+                self._level_done(); return
+        self.after(1000, self._timer_tick)
+
     
     
