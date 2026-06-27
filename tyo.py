@@ -120,3 +120,7 @@ class SettingsScreen(BaseScreen):
         tk.Label(self, text="⚙  PENGATURAN",
                  font=("Courier New", 36, "bold"),
                  bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(60, 24)) 
+        
+        card = tk.Frame(self, bg=self.C_CARD, padx=70, pady=32)
+        card.grid(row=1, column=0, pady=8)
+        card.columnconfigure(1, weight=1) 
