@@ -109,3 +109,21 @@ class GameOverScreen(BaseScreen):
             self._title.config(text="GAME OVER", fg=self.C_DNG)
         self._sc_var.set(f"Skor Akhir: {self._score:,}")
         self._lv_var.set(f"Level Tercapai: {self._level} / 3")
+
+# ══════════════════════════════════════════════════════════════════
+#  SCREEN — LEADERBOARD
+# ══════════════════════════════════════════════════════════════════
+
+class LeaderboardScreen(BaseScreen):
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        self._build()
+
+    def _build(self):
+        self.columnconfigure(0, weight=1)
+
+        tk.Label(self, text="🏆  LEADERBOARD",
+                 font=("Courier New", 36, "bold"),
+                 bg=self.BG, fg=self.C_ACC).grid(row=0, column=0, pady=(60, 6))
+        tk.Label(self, text="Top 10 Ghost Buster Terbaik",
+                 font=self.F_BODY, bg=self.BG, fg=self.C_MUT).grid(row=1, column=0, pady=(0, 16))
