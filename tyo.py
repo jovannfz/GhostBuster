@@ -155,4 +155,28 @@ class LeaderboardScreen(BaseScreen):
         tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_BODY,
                   bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
                   width=28, command=lambda: self.controller.show("MenuScreen")).grid(
-            row=4, column=0, pady=4)          
+            row=4, column=0, pady=4) 
+
+    def _load(self):
+        try:
+            data = db_get_leaderboard(10)
+        except Exception:
+            data = []
+
+        medals = ["🥇", "🥈", "🥉"] + ["  "] * 7
+        for i, widgets in enumerate(self._rows):
+            if i < len(data):
+                r   = data[i]
+                rank = medals[i] if i < 3 else str(i + 1)
+                vals = [rank, r["username"], f"{r['score']:,}",
+                        str(r["level_reached"]), r["tanggal"]]
+                fg = (self.C_ACC if i == 0 else "#c0c0c0" if i == 1 else
+                      "#cd7f32" if i == 2 else self.C_TXT)
+            else:
+                vals = [str(i + 1), "—", "—", "—", "—"]
+                fg   = self.C_MUT
+            for lbl, val in zip(widgets, vals):
+                lbl.config(text=val, fg=fg)
+
+    def on_show(self):
+        self._load() 
