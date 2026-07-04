@@ -269,3 +269,51 @@ class SettingsScreen(BaseScreen):
     def _logout(self):
         self.controller.set_user(None)
         self.controller.show("AuthScreen") 
+
+# ══════════════════════════════════════════════════════════════════
+#  APP CONTROLLER — ENTRY POINT
+# ══════════════════════════════════════════════════════════════════
+
+class App(tk.Tk):
+    WIDTH  = 1366
+    HEIGHT = 768
+
+    def __init__(self):
+        super().__init__()
+        self.title("GhostBusters 👻")
+        self.geometry(f"{self.WIDTH}x{self.HEIGHT}+0+0")
+        self.resizable(False, False)
+        self.configure(bg="#0a0f1e")
+
+        self.current_user = None
+
+        container = tk.Frame(self, bg="#0a0f1e")
+        container.pack(fill="both", expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+        for Cls in [AuthScreen, MenuScreen, GameScreen,
+                    GameOverScreen, LeaderboardScreen, SettingsScreen]:
+            name = Cls.__name__
+            f    = Cls(parent=container, controller=self)
+            self.frames[name] = f
+            f.grid(row=0, column=0, sticky="nsew")
+
+        self.show("AuthScreen")
+        self.protocol("WM_DELETE_WINDOW", self._on_close)
+
+    def show(self, name: str):
+        frame = self.frames[name]
+        frame.tkraise()
+        frame.on_show()
+
+    def set_user(self, user):
+        self.current_user = user
+
+    def _on_close(self):
+        if messagebox.askokcancel("Keluar", "Yakin ingin keluar dari GhostBusters?"):
+            self.destroy()
+
+    def quit(self):
+        self._on_close() 
