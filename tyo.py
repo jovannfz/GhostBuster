@@ -316,4 +316,21 @@ class App(tk.Tk):
             self.destroy()
 
     def quit(self):
-        self._on_close() 
+        self._on_close()
+
+# ══════════════════════════════════════════════════════════════════
+#  MAIN
+# ══════════════════════════════════════════════════════════════════
+
+if __name__ == "__main__":
+    try:
+        App().mainloop()
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        try:
+            messagebox.showerror("Error Fatal",
+                f"Gagal menjalankan aplikasi:\n\n{e}\n\n"
+                "Pastikan MySQL sudah berjalan dan konfigurasi\n"
+                "DB_CONFIG di bagian atas file sudah benar.")
+        except Exception:
+            pass  
