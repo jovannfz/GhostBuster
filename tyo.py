@@ -200,3 +200,22 @@ class SettingsScreen(BaseScreen):
         card = tk.Frame(self, bg=self.C_CARD, padx=70, pady=32)
         card.grid(row=1, column=0, pady=8)
         card.columnconfigure(1, weight=1) 
+
+        tk.Label(card, text="👤  Profil Pemain",
+                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_ACC).grid(
+            row=0, column=0, columnspan=2, pady=(0, 14), sticky="w")
+
+        self._uname_lbl = tk.Label(card, text="Username: —",
+                                   font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
+        self._uname_lbl.grid(row=1, column=0, columnspan=2, sticky="w", pady=3)
+
+        self._best_lbl = tk.Label(card, text="Skor Terbaik: —",
+                                  font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
+        self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=3)
+
+        self._lv_lbl = tk.Label(card, text="Level Tertinggi: —",
+                                font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
+        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=3)
+
+        card2 = tk.Frame(self, bg=self.C_CARD, padx=70, pady=30)
+        card2.grid(row=2, column=0, pady=8) 
