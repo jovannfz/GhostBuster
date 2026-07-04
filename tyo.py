@@ -247,3 +247,25 @@ class SettingsScreen(BaseScreen):
                   relief="flat", cursor="hand2",
                   command=lambda: self.controller.show("MenuScreen")).grid(
             row=4, column=0, pady=4)
+    
+    def on_show(self):
+        u = self.controller.current_user
+        if not u: return
+        self._uname_lbl.config(text=f"Username: {u['username']}")
+        try:
+            prog = db_get_progress(u["id"])
+            if prog:
+                self._best_lbl.config(text=f"Skor Terbaik: {prog['skor_terbaik']:,}")
+                names = {1: "Easy", 2: "Medium", 3: "Hard"}
+                lv = prog["level_tercapai"]
+                self._lv_lbl.config(text=f"Level Tertinggi: {lv} — {names.get(lv, '?')}")
+            else:
+                self._best_lbl.config(text="Skor Terbaik: 0")
+                self._lv_lbl.config(text="Level Tertinggi: 1 — Easy")
+        except Exception:
+            self._best_lbl.config(text="Skor Terbaik: (DB tidak konek)")
+            self._lv_lbl.config(text="—")
+
+    def _logout(self):
+        self.controller.set_user(None)
+        self.controller.show("AuthScreen") 
