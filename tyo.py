@@ -219,3 +219,31 @@ class SettingsScreen(BaseScreen):
 
         card2 = tk.Frame(self, bg=self.C_CARD, padx=70, pady=30)
         card2.grid(row=2, column=0, pady=8) 
+
+        tk.Label(card2, text="🎮  Kontrol",
+                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_ACC).grid(
+            row=0, column=0, columnspan=2, pady=(0, 12), sticky="w")
+
+        controls = [
+            ("Gerak",   "← → / A D"),
+            ("Lompat",  "SPACE / ↑ / W"),
+            ("Tembak",  "Z  atau  X"),
+            ("Pause",   "Tombol Pause di layar"),
+            ("Kembali", "Tombol Menu di layar"),
+        ]
+        for i, (act, key) in enumerate(controls):
+            tk.Label(card2, text=f"{act}:", font=self.F_BODY,
+                     bg=self.C_CARD, fg=self.C_MUT, width=12, anchor="w").grid(
+                row=i + 1, column=0, sticky="w", pady=2)
+            tk.Label(card2, text=key, font=("Courier New", 12, "bold"),
+                     bg=self.C_CARD, fg=self.C_PRI).grid(
+                row=i + 1, column=1, sticky="w", padx=(14, 0), pady=2)
+
+        tk.Button(self, text="🚪  Logout", font=self.F_HEAD, width=26, pady=12,
+                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
+                  command=self._logout).grid(row=3, column=0, pady=(30, 8))
+        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_BODY,
+                  width=26, pady=10, bg="#1e4d2b", fg=self.C_TXT,
+                  relief="flat", cursor="hand2",
+                  command=lambda: self.controller.show("MenuScreen")).grid(
+            row=4, column=0, pady=4)
