@@ -147,4 +147,12 @@ class LeaderboardScreen(BaseScreen):
                                bg=bg, fg=self.C_TXT, width=w, pady=4)
                 lbl.grid(row=r + 1, column=col, padx=1, pady=1, sticky="ew")
                 row_w.append(lbl)
-            self._rows.append(row_w)         
+            self._rows.append(row_w)
+
+        tk.Button(self, text="🔄  Refresh", font=self.F_BODY,
+                  bg="#1e4d2b", fg=self.C_TXT, relief="flat", cursor="hand2",
+                  width=14, command=self._load).grid(row=3, column=0, pady=(22, 6))
+        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_BODY,
+                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
+                  width=28, command=lambda: self.controller.show("MenuScreen")).grid(
+            row=4, column=0, pady=4)          
