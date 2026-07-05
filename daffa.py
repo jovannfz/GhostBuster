@@ -1,11 +1,3 @@
-
-# ══════════════════════════════════════════════════════════════════
-#  TYO — GAME LOGIC (PHYSICS, AI, OBJECTS)
-#  Berisi: konstanta level & tema, LevelManager, ScoreManager,
-#          PlayerPhysics, GhostAI, CoinItem, Projectile, Particle,
-#          dan helper collision
-# ══════════════════════════════════════════════════════════════════
-
 import math
 import random
 
