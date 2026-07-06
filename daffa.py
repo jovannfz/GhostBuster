@@ -2,9 +2,6 @@ import math
 import random
 
 
-# ══════════════════════════════════════════════════════════════════
-#  KONSTANTA LEVEL, TEMA, & TIPE HANTU
-# ══════════════════════════════════════════════════════════════════
 
 LEVEL_CFG = {
     1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120, "hantu": 4,  "mult": 1.0},
@@ -24,13 +21,10 @@ GHOST_TYPES = [
     {"color": "#c0b0f0", "speed_mult": 0.6, "hp": 3, "score": 200, "name": "Kuat"},
 ]
 
-GROUND_Y = 460   # y tanah utama di canvas
-P_FLOOR  = 426   # y pemain saat berdiri di tanah (GROUND_Y - player.H)
+GROUND_Y = 460   
+P_FLOOR  = 426   
 
 
-# ══════════════════════════════════════════════════════════════════
-#  LEVEL MANAGER
-# ══════════════════════════════════════════════════════════════════
 
 class LevelManager:
     def __init__(self):
@@ -49,9 +43,6 @@ class LevelManager:
         return False
 
 
-# ══════════════════════════════════════════════════════════════════
-#  SCORE MANAGER
-# ══════════════════════════════════════════════════════════════════
 
 class ScoreManager:
     BASE_COIN = 50
@@ -74,9 +65,6 @@ class ScoreManager:
         self.total = max(0, self.total - amt)
 
 
-# ══════════════════════════════════════════════════════════════════
-#  PLAYER PHYSICS
-# ══════════════════════════════════════════════════════════════════
 
 class PlayerPhysics:
     GRAVITY  = 0.55
@@ -133,9 +121,6 @@ class PlayerPhysics:
         return x1 < ox + ow and x2 > ox and y1 < oy + oh and y2 > oy
 
 
-# ══════════════════════════════════════════════════════════════════
-#  GHOST AI
-# ══════════════════════════════════════════════════════════════════
 
 class GhostAI:
     def __init__(self, x, y, speed, gtype=0):
@@ -168,9 +153,6 @@ class GhostAI:
         return (self.x - 14, self.y - 20, 28, 36)
 
 
-# ══════════════════════════════════════════════════════════════════
-#  COIN ITEM
-# ══════════════════════════════════════════════════════════════════
 
 class CoinItem:
     def __init__(self, x, y, gem=False):
@@ -189,9 +171,6 @@ class CoinItem:
         return (self.x - 9, self.y - 9, 18, 18)
 
 
-# ══════════════════════════════════════════════════════════════════
-#  PROJECTILE
-# ══════════════════════════════════════════════════════════════════
 
 class Projectile:
     def __init__(self, x, y, direction):
@@ -208,9 +187,6 @@ class Projectile:
         return (self.x - 6, self.y - 6, 12, 12)
 
 
-# ══════════════════════════════════════════════════════════════════
-#  PARTICLE EFFECT
-# ══════════════════════════════════════════════════════════════════
 
 class Particle:
     def __init__(self, x, y, color, count=10, speed=3):
@@ -239,9 +215,6 @@ class Particle:
         return [p for p in self.items if p["life"] > 0]
 
 
-# ══════════════════════════════════════════════════════════════════
-#  HELPER COLLISION
-# ══════════════════════════════════════════════════════════════════
 
 def _rect_collide(a, b):
     return (a[0] < b[0] + b[2] and a[0] + a[2] > b[0] and
