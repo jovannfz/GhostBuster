@@ -2,7 +2,7 @@ import tkinter as tk
 import math
 
 # Import dari file teman-teman
-from tyo import (
+from daffa import (
     LevelManager, ScoreManager, PlayerPhysics,
     GhostAI, CoinItem, Projectile, Particle,
     _rect_collide, GROUND_Y, P_FLOOR

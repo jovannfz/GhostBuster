@@ -1,20 +1,21 @@
 import sys
 from tkinter import messagebox
 
-# Mengimpor class App (Controller Utama) dari file tyo_screens_app
-from tyo.py import App
+# Mengimpor controller utama (App) dari file tyo.py
+from tyo import App
 
 def main():
     """
-    Fungsi utama untuk menyalakan game GhostBusters kelompok.
-    File ini memanggil App controller yang mengikat login Jovan,
-    menu utama Daffa, gameplay Ozy, dan leaderboard.
+    File entry point utama untuk menjalankan game GhostBusters.
+    File ini memanggil App controller dari tyo.py yang secara otomatis
+    merangkai sistem login Jovan, gameplay Ozzy, dan menu-menu Daffa.
     """
     try:
-        # Membuat instance aplikasi dan menjalankan mainloop Tkinter
+        # Inisialisasi dan jalankan aplikasi Tkinter
         app = App()
         app.mainloop()
     except Exception as e:
+        # Menampilkan log error ke terminal jika terjadi crash saat start
         import traceback
         traceback.print_exc()
         try:
