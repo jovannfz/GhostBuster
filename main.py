@@ -1,7 +1,6 @@
 import sys
 from tkinter import messagebox
 
-# Mengimpor controller utama (App) dari file tyo.py
 from tyo import App
 
 def main():
@@ -11,11 +10,9 @@ def main():
     merangkai sistem login Jovan, gameplay Ozzy, dan menu-menu Daffa.
     """
     try:
-        # Inisialisasi dan jalankan aplikasi Tkinter
         app = App()
         app.mainloop()
     except Exception as e:
-        # Menampilkan log error ke terminal jika terjadi crash saat start
         import traceback
         traceback.print_exc()
         try:

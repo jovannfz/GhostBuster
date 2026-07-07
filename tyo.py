@@ -275,7 +275,7 @@ class SettingsScreen(BaseScreen):
 # ══════════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
-    WIDTH  = 1366
+    WIDTH  = 1280
     HEIGHT = 768
 
     def __init__(self):
