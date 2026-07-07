@@ -55,4 +55,40 @@ GHOST_POS = [
     (3480, 150, 1),(3550, 200, 0),
 ]
 
-PLAT_RECTS = [(p[0], p[1], p[0] + p[2], p[1] + p[3]) for p in PLATFORMS]
+PLAT_RECTS = [(p[0], p[1], p[0] + p[2], p[1] + p[3]) for p in PLATFORMS] 
+
+# ══════════════════════════════════════════════════════════════════
+#  FUNGSI DRAW KARAKTER
+# ══════════════════════════════════════════════════════════════════
+
+def _draw_ghost(c, x, y, color, anim, hp, max_hp):
+    c.create_oval(x - 18, y - 24, x + 18, y + 2, fill=color, outline="")
+    pts = [x - 18, y]
+    for i in range(7):
+        bx = x - 18 + (i / 6) * 36
+        bw = 7 if i % 2 == 0 else -7
+        pts += [bx, y + 20 + bw]
+    pts += [x + 18, y]
+    c.create_polygon(pts, fill=color, outline="")
+    c.create_rectangle(x - 11, y - 14, x - 5,  y - 7,  fill="#222", outline="")
+    c.create_rectangle(x + 5,  y - 14, x + 11, y - 7,  fill="#222", outline="")
+    if max_hp > 1:
+        c.create_rectangle(x - 18, y - 32, x + 18, y - 27, fill="#c00", outline="")
+        fw = int(36 * hp / max_hp)
+        c.create_rectangle(x - 18, y - 32, x - 18 + fw, y - 27, fill="#3f3", outline="")
+
+
+def _draw_player(c, x, y, w, h, on_ground, frame):
+    c.create_oval(x + 2, y + h + 2, x + w - 2, y + h + 10, fill="#333", outline="")
+    c.create_oval(x, y, x + w, y + h // 2 + 8, fill="#e8e8f0", outline="#aaa", width=1)
+    pts = [x, y + h // 2 + 2, x, y + h]
+    for i in range(6):
+        bx = x + (i / 5) * w
+        bv = 6 if i % 2 == 0 else -6
+        pts += [bx, y + h + bv]
+    pts += [x + w, y + h // 2 + 2]
+    c.create_polygon(pts, fill="#e8e8f0", outline="")
+    c.create_rectangle(x + 6,  y + 5,  x + 12, y + 12, fill="#222", outline="")
+    c.create_rectangle(x + 18, y + 5,  x + 24, y + 12, fill="#222", outline="")
+    c.create_arc(x + 8, y + 12, x + 22, y + 20, start=200, extent=140,
+                 style="arc", outline="#444", width=2)
