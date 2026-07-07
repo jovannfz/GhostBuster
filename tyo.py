@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from jovan_db_auth   import AuthScreen, db_get_leaderboard, db_get_progress
-from ozy_game_screen import GameScreen, BaseScreen
+from jovan  import AuthScreen, db_get_leaderboard, db_get_progress
+from ozzy import GameScreen, BaseScreen
 
 # ══════════════════════════════════════════════════════════════════
 #  SCREEN — MENU UTAMA
