@@ -1,7 +1,6 @@
 import tkinter as tk
 import math
 
-# Import dari file teman-teman
 from daffa import (
     LevelManager, ScoreManager, PlayerPhysics,
     GhostAI, CoinItem, Projectile, Particle,
@@ -145,6 +144,12 @@ class GameScreen(BaseScreen):
         self._keys       = {"left": False, "right": False, "jump": False, "fire": False}
         self._fire_cd    = 0
 
+        # Menyimpan progres saat pemain memilih "Kembali ke Menu Utama"
+        # dari layar transisi antar-level, supaya bisa ditawarkan pilihan
+        # untuk melanjutkan atau mengulang saat kembali bermain.
+        self._resume_level = None
+        self._resume_score = 0
+
         self._build_ui()
 
     def _build_ui(self):
@@ -204,8 +209,11 @@ class GameScreen(BaseScreen):
         if k in ("z", "Z", "x", "X"):       self._keys["fire"]  = False
 
     def on_show(self):
-        self.lv_mgr.reset()
-        self._init_level()
+        if self._resume_level and self._resume_level > 1:
+            self._show_resume_choice()
+        else:
+            self.lv_mgr.reset()
+            self._init_level()
 
     def _init_level(self):
         cfg = self.lv_mgr.cfg()
@@ -353,30 +361,49 @@ class GameScreen(BaseScreen):
 
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_text(CW // 2, 150,
-                      text=f"✅  Level {prev_lv} Selesai!",
-                      font=("Courier New", 36, "bold"), fill=self.C_PRI)
-        c.create_text(CW // 2, 230,
+        c.create_text(CW // 2, 120,
+                      text=f"✅  Selamat! Level {prev_lv} Selesai!",
+                      font=("Courier New", 34, "bold"), fill=self.C_PRI)
+        c.create_text(CW // 2, 190,
                       text=f"Bonus Waktu: +{bonus} poin",
-                      font=("Courier New", 24), fill=self.C_ACC)
-        c.create_text(CW // 2, 310,
+                      font=("Courier New", 22), fill=self.C_ACC)
+        c.create_text(CW // 2, 260,
                       text=f"Level {self.lv_mgr.current}: {next_cfg['nama']} — {next_cfg['tema']}",
-                      font=("Courier New", 28, "bold"), fill="#a8ff78")
-        c.create_text(CW // 2, 400,
+                      font=("Courier New", 26, "bold"), fill="#a8ff78")
+        c.create_text(CW // 2, 335,
                       text="Skor sekarang: " + f"{self.sc_mgr.total:,}",
                       font=("Courier New", 20), fill=self.C_TXT)
 
-        bx1, by1, bx2, by2 = CW // 2 - 160, 455, CW // 2 + 160, 510
+        # Tombol kiri: lanjut ke level berikutnya
+        bx1, by1, bx2, by2 = CW // 2 - 270, 400, CW // 2 - 15, 458
         btn_rect = c.create_rectangle(bx1, by1, bx2, by2,
                                        fill=self.C_PRI, outline="", tags="btn_next")
-        c.create_text(CW // 2, (by1 + by2) // 2,
+        c.create_text((bx1 + bx2) // 2, (by1 + by2) // 2,
                       text="▶  Lanjut ke Level Berikutnya",
-                      font=("Courier New", 16, "bold"),
+                      font=("Courier New", 15, "bold"),
                       fill="#000", tags="btn_next")
+
+        # Tombol kanan: kembali ke menu utama
+        mx1, my1, mx2, my2 = CW // 2 + 15, 400, CW // 2 + 270, 458
+        btn_menu = c.create_rectangle(mx1, my1, mx2, my2,
+                                       fill="#1e4d2b", outline="", tags="btn_menu")
+        c.create_text((mx1 + mx2) // 2, (my1 + my2) // 2,
+                      text="🏠  Kembali ke Menu Utama",
+                      font=("Courier New", 15, "bold"),
+                      fill=self.C_TXT, tags="btn_menu")
 
         c.tag_bind("btn_next", "<Button-1>", lambda e: self._start_next())
         c.tag_bind("btn_next", "<Enter>",    lambda e: c.itemconfig(btn_rect, fill=self.C_ACC))
         c.tag_bind("btn_next", "<Leave>",    lambda e: c.itemconfig(btn_rect, fill=self.C_PRI))
+
+        c.tag_bind("btn_menu", "<Button-1>", lambda e: self._back_menu_from_transition())
+        c.tag_bind("btn_menu", "<Enter>",    lambda e: c.itemconfig(btn_menu, fill="#2e6d3b"))
+        c.tag_bind("btn_menu", "<Leave>",    lambda e: c.itemconfig(btn_menu, fill="#1e4d2b"))
+
+        c.create_text(CW // 2, 500,
+                      text="Enter/Space = Lanjut Level Berikutnya",
+                      font=("Courier New", 12), fill=self.C_MUT)
+
         self.bind_all("<Return>", lambda e: self._start_next())
         self.bind_all("<space>",  lambda e: self._start_next())
 
@@ -387,6 +414,80 @@ class GameScreen(BaseScreen):
         saved = self.sc_mgr.total
         self._init_level()
         self.sc_mgr.total = saved
+
+    def _back_menu_from_transition(self):
+        """Dipanggil saat pemain memilih 'Kembali ke Menu Utama' setelah
+        menyelesaikan sebuah level. Progres (level & skor) disimpan agar
+        saat pemain memilih main lagi, ia bisa memilih lanjut atau mengulang."""
+        self.unbind_all("<Return>")
+        self.unbind_all("<space>")
+        self._resume_level = self.lv_mgr.current
+        self._resume_score = self.sc_mgr.total
+        self._transition = False
+        self._running    = False
+        self._cancel()
+        self.controller.show("MenuScreen")
+
+    def _show_resume_choice(self):
+        """Layar pilihan yang muncul saat GameScreen dibuka kembali dan ada
+        progres level tersimpan: lanjut dari level tersimpan, atau mengulang
+        dari Level 1."""
+        c = self._cv
+        self._running    = False
+        self._transition = True
+        self._cancel()
+
+        c.delete("all")
+        c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
+        c.create_text(CW // 2, 150,
+                      text="🎮  Lanjutkan Permainan?",
+                      font=("Courier New", 34, "bold"), fill=self.C_PRI)
+        c.create_text(CW // 2, 215,
+                      text=(f"Progres tersimpan: Level {self._resume_level} "
+                            f"— Skor {self._resume_score:,}"),
+                      font=("Courier New", 18), fill=self.C_TXT)
+
+        bx1, by1, bx2, by2 = CW // 2 - 220, 290, CW // 2 + 220, 345
+        btn_resume = c.create_rectangle(bx1, by1, bx2, by2,
+                                         fill=self.C_PRI, outline="", tags="btn_resume")
+        c.create_text(CW // 2, (by1 + by2) // 2,
+                      text=f"▶  Lanjut ke Level {self._resume_level}",
+                      font=("Courier New", 16, "bold"),
+                      fill="#000", tags="btn_resume")
+
+        rx1, ry1, rx2, ry2 = CW // 2 - 220, 365, CW // 2 + 220, 420
+        btn_restart = c.create_rectangle(rx1, ry1, rx2, ry2,
+                                          fill=self.C_DNG, outline="", tags="btn_restart")
+        c.create_text(CW // 2, (ry1 + ry2) // 2,
+                      text="🔄  Ulang dari Level 1",
+                      font=("Courier New", 16, "bold"),
+                      fill="#fff", tags="btn_restart")
+
+        c.tag_bind("btn_resume", "<Button-1>", lambda e: self._confirm_resume())
+        c.tag_bind("btn_resume", "<Enter>",    lambda e: c.itemconfig(btn_resume, fill=self.C_ACC))
+        c.tag_bind("btn_resume", "<Leave>",    lambda e: c.itemconfig(btn_resume, fill=self.C_PRI))
+
+        c.tag_bind("btn_restart", "<Button-1>", lambda e: self._confirm_restart())
+        c.tag_bind("btn_restart", "<Enter>",    lambda e: c.itemconfig(btn_restart, fill="#ff7a9c"))
+        c.tag_bind("btn_restart", "<Leave>",    lambda e: c.itemconfig(btn_restart, fill=self.C_DNG))
+
+    def _confirm_resume(self):
+        lvl   = self._resume_level
+        score = self._resume_score
+        self._resume_level = None
+        self._resume_score = 0
+        self._transition   = False
+        self.lv_mgr.current = lvl
+        self._init_level()
+        self.sc_mgr.total = score
+        self._update_hud()
+
+    def _confirm_restart(self):
+        self._resume_level = None
+        self._resume_score = 0
+        self._transition   = False
+        self.lv_mgr.reset()
+        self._init_level()
 
     def _game_end(self, won):
         self._running    = False
