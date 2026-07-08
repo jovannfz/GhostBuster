@@ -178,7 +178,7 @@ class GameScreen(BaseScreen):
         ctrl = tk.Frame(self, bg=self.BG)
         ctrl.pack(fill="x", padx=14, pady=4)
 
-        tk.Label(ctrl, text="Arrow/WASD = Gerak  |  Space/W/↑ = Lompat  |  Z/X = Tembak",
+        tk.Label(ctrl, text="Arrow/WASD = Gerak  |  Space/W/↑ = Lompat  |  Z/J = Tembak",
                  font=self.F_SM, bg=self.BG, fg="#555").pack(side="left", padx=8)
 
         self._pause_btn = tk.Button(ctrl, text="⏸ Pause",
@@ -199,14 +199,14 @@ class GameScreen(BaseScreen):
         if k in ("Left",  "a", "A"):        self._keys["left"]  = True
         if k in ("Right", "d", "D"):        self._keys["right"] = True
         if k in ("space", "Up", "w", "W"):  self._keys["jump"]  = True
-        if k in ("z", "Z", "x", "X"):       self._keys["fire"]  = True
+        if k in ("z", "Z", "j", "J"):       self._keys["fire"]  = True
 
     def _key_up(self, e):
         k = e.keysym
         if k in ("Left",  "a", "A"):        self._keys["left"]  = False
         if k in ("Right", "d", "D"):        self._keys["right"] = False
         if k in ("space", "Up", "w", "W"):  self._keys["jump"]  = False
-        if k in ("z", "Z", "x", "X"):       self._keys["fire"]  = False
+        if k in ("z", "Z", "j", "J"):       self._keys["fire"]  = False
 
     def on_show(self):
         if self._resume_level and self._resume_level > 1:
