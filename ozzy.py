@@ -170,6 +170,7 @@ class GameScreen(BaseScreen):
     def _build_ui(self):
         hud = tk.Frame(self, bg=self.BG)
         hud.pack(fill="x", padx=14, pady=(6, 2))
+        self._hud = hud
 
         self._lv_var = tk.StringVar(value="Level 1 — Easy")
         self._sc_var = tk.StringVar(value="Skor: 0")
@@ -223,6 +224,16 @@ class GameScreen(BaseScreen):
         if k in ("space", "Up", "w", "W"):  self._keys["jump"]  = False
         if k in ("z", "Z", "j", "J"):       self._keys["fire"]  = False
 
+    def _hide_hud(self):
+        # Sembunyikan bar Level/Skor/Timer/Nyawa di atas canvas, dipakai
+        # saat layar "Lanjutkan Permainan?" atau transisi antar-level
+        # ditampilkan, supaya tidak ada info gameplay lama yang nyangkut.
+        self._hud.pack_forget()
+
+    def _show_hud(self):
+        if not self._hud.winfo_ismapped():
+            self._hud.pack(fill="x", padx=14, pady=(6, 2), before=self._cv)
+
     def on_show(self):
         if self._resume_level and self._resume_level > 1:
             self._show_resume_choice()
@@ -231,6 +242,7 @@ class GameScreen(BaseScreen):
             self._init_level()
 
     def _init_level(self):
+        self._show_hud()
         cfg = self.lv_mgr.cfg()
         self.sc_mgr = ScoreManager(mult=cfg["mult"])
         self.player = PlayerPhysics()
@@ -339,7 +351,7 @@ class GameScreen(BaseScreen):
                 cr = c.rect()
                 if self.player.collides(cr[0], cr[1], cr[2], cr[3]):
                     c.taken = True
-                    self.sc_mgr.coin()
+                    self.sc_mgr.coin(self.lv_mgr.current)
                     color = "#4dffb0" if c.gem else "#ffd700"
                     self._parts.append(Particle(c.x, c.y, color, 8, 3))
 
@@ -367,7 +379,7 @@ class GameScreen(BaseScreen):
         self._running    = False
         self._transition = True
         self._cancel()
-        bonus = self.sc_mgr.time_bonus(self._timer)
+        bonus = self.sc_mgr.time_bonus(self._timer, self.lv_mgr.current)
 
         if self.lv_mgr.is_last():
             # Level terakhir (Level 3) selesai -> ini yang dianggap "menang",
@@ -389,6 +401,7 @@ class GameScreen(BaseScreen):
                 pass
 
     def _show_transition(self, bonus):
+        self._hide_hud()
         c       = self._cv
         prev_lv = self.lv_mgr.current - 1
         next_cfg = self.lv_mgr.cfg()
@@ -468,6 +481,7 @@ class GameScreen(BaseScreen):
         progres level tersimpan: lanjut dari level tersimpan, atau mengulang
         dari Level 1."""
         c = self._cv
+        self._hide_hud()
         self._running    = False
         self._transition = True
         self._cancel()
