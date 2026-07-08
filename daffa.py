@@ -4,9 +4,9 @@ import random
 
 
 LEVEL_CFG = {
-    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120, "hantu": 4,  "mult": 1.0},
-    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 7,  "mult": 1.5},
-    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 50,  "hantu": 11, "mult": 2.0},
+    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120, "hantu": 5,  "mult": 1.0},
+    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 9,  "mult": 1.5},
+    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 50,  "hantu": 14, "mult": 2.0},
 }
 
 THEME = {
@@ -56,7 +56,9 @@ class ScoreManager:
         g = int(base * self.mult); self.total += g; return g
 
     def coin(self):
-        g = int(self.BASE_COIN * self.mult); self.total += g; return g
+        # Nilai koin dibuat flat (tidak dikali mult level), supaya di semua
+        # level 1 koin = +1 skor (bukan 50/75/100 sesuai mult level).
+        g = 1; self.total += g; return g
 
     def time_bonus(self, secs):
         b = int(secs * self.TIME_MULT * self.mult); self.total += b; return b
