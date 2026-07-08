@@ -214,7 +214,10 @@ class AuthScreen(tk.Frame):
 
         if res["success"]:
             self._msg.set("")
-            user = res.get("user") or {"id": None, "username": u}
+            if self._mode == "register":
+                user = {"id": res.get("user_id"), "username": u}
+            else:
+                user = res.get("user") or {"id": None, "username": u}
             self.controller.set_user(user)
             self.controller.show("MenuScreen")
         else:
