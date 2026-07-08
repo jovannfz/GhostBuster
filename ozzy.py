@@ -158,6 +158,11 @@ class GameScreen(BaseScreen):
         self._parts      = []
         self._keys       = {"left": False, "right": False, "jump": False, "fire": False}
         self._fire_cd    = 0
+        # Menampung job `after()` yang dijadwalkan tiap KeyRelease, supaya
+        # auto-repeat OS (yang mengirim Release+Press berkali-kali selama
+        # tombol ditahan) tidak dianggap "tombol dilepas" -> gerakan/lompat
+        # jadi patah-patah. Lihat _key_down/_key_up.
+        self._release_jobs = {}
 
         # Menyimpan progres saat pemain memilih "Kembali ke Menu Utama"
         # dari layar transisi antar-level, supaya bisa ditawarkan pilihan
@@ -168,8 +173,14 @@ class GameScreen(BaseScreen):
         self._build_ui()
 
     def _build_ui(self):
+        # HUD disusun pakai grid 4-kolom sama-lebar (bukan pack side left/
+        # right) supaya Level / Skor / Timer / Nyawa selalu berjarak rapi
+        # dan simetris mengikuti lebar canvas, walau teksnya panjang
+        # (mis. "Level 2 — Medium").
         hud = tk.Frame(self, bg=self.BG)
-        hud.pack(fill="x", padx=14, pady=(6, 2))
+        hud.pack(fill="x", padx=14, pady=(8, 4))
+        for col in range(4):
+            hud.columnconfigure(col, weight=1)
         self._hud = hud
 
         self._lv_var = tk.StringVar(value="Level 1 — Easy")
@@ -178,51 +189,76 @@ class GameScreen(BaseScreen):
         self._hp_var = tk.StringVar(value="❤ ❤ ❤")
 
         tk.Label(hud, textvariable=self._lv_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_PRI).pack(side="left", padx=14)
+                 bg=self.BG, fg=self.C_PRI, anchor="w").grid(
+            row=0, column=0, sticky="w")
         tk.Label(hud, textvariable=self._sc_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_ACC).pack(side="left", padx=14)
+                 bg=self.BG, fg=self.C_ACC, anchor="center").grid(
+            row=0, column=1, sticky="ew")
         tk.Label(hud, textvariable=self._tm_var, font=self.F_HEAD,
-                 bg=self.BG, fg="#fff").pack(side="left", padx=14)
+                 bg=self.BG, fg="#fff", anchor="center").grid(
+            row=0, column=2, sticky="ew")
         tk.Label(hud, textvariable=self._hp_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_DNG).pack(side="right", padx=14)
+                 bg=self.BG, fg=self.C_DNG, anchor="e").grid(
+            row=0, column=3, sticky="e")
 
         self._cv = tk.Canvas(self, width=CW, height=CH,
                              bg="#1a2a5e", highlightthickness=2,
                              highlightbackground=self.C_PRI)
-        self._cv.pack(padx=14)
+        self._cv.pack(padx=14, pady=(0, 4))
 
         ctrl = tk.Frame(self, bg=self.BG)
         ctrl.pack(fill="x", padx=14, pady=4)
 
-        tk.Label(ctrl, text="Arrow/WASD = Gerak  |  Space/W/↑ = Lompat  |  Z/J = Tembak",
+        tk.Label(ctrl, text="Arrow/WASD = Gerak  |  Space/W/↑ = Lompat  |  Z/X/J = Tembak",
                  font=self.F_SM, bg=self.BG, fg="#555").pack(side="left", padx=8)
 
         self._pause_btn = tk.Button(ctrl, text="⏸ Pause",
                                     font=self.F_BODY, bg=self.C_ACC, fg="#000",
-                                    relief="flat", cursor="hand2",
+                                    relief="flat", cursor="hand2", padx=10,
                                     command=self._toggle_pause)
         self._pause_btn.pack(side="left", padx=6)
 
         tk.Button(ctrl, text="🏠 Menu", font=self.F_BODY,
-                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
+                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2", padx=10,
                   command=self._back_menu).pack(side="right", padx=6)
 
         self.bind_all("<KeyPress>",   self._key_down)
         self.bind_all("<KeyRelease>", self._key_up)
 
+    _KEYMAP = {
+        "left":  ("Left",  "a", "A"),
+        "right": ("Right", "d", "D"),
+        "jump":  ("space", "Up", "w", "W"),
+        "fire":  ("z", "Z", "x", "X", "j", "J"),
+    }
+
+    def _set_key(self, keysym, val):
+        for action, syms in self._KEYMAP.items():
+            if keysym in syms:
+                self._keys[action] = val
+
     def _key_down(self, e):
         k = e.keysym
-        if k in ("Left",  "a", "A"):        self._keys["left"]  = True
-        if k in ("Right", "d", "D"):        self._keys["right"] = True
-        if k in ("space", "Up", "w", "W"):  self._keys["jump"]  = True
-        if k in ("z", "Z", "j", "J"):       self._keys["fire"]  = True
+        # Jika ada job "lepas tombol" yang masih menunggu untuk keysym ini,
+        # batalkan -> itu berarti event Release sebelumnya cuma bagian dari
+        # auto-repeat OS (tombol masih ditahan), bukan benar-benar dilepas.
+        job = self._release_jobs.pop(k, None)
+        if job:
+            self.after_cancel(job)
+        self._set_key(k, True)
 
     def _key_up(self, e):
         k = e.keysym
-        if k in ("Left",  "a", "A"):        self._keys["left"]  = False
-        if k in ("Right", "d", "D"):        self._keys["right"] = False
-        if k in ("space", "Up", "w", "W"):  self._keys["jump"]  = False
-        if k in ("z", "Z", "j", "J"):       self._keys["fire"]  = False
+        # Jangan langsung matikan aksinya. Tunggu sebentar (satu "beat"
+        # auto-repeat) -- kalau tidak ada KeyPress susulan untuk keysym
+        # yang sama, baru dianggap benar-benar dilepas. Ini mencegah
+        # gerak/lompat jadi patah-patah saat tombol ditahan lama.
+        self._release_jobs[k] = self.after(
+            35, lambda: self._apply_release(k))
+
+    def _apply_release(self, k):
+        self._release_jobs.pop(k, None)
+        self._set_key(k, False)
 
     def _hide_hud(self):
         # Sembunyikan bar Level/Skor/Timer/Nyawa di atas canvas, dipakai
@@ -232,7 +268,7 @@ class GameScreen(BaseScreen):
 
     def _show_hud(self):
         if not self._hud.winfo_ismapped():
-            self._hud.pack(fill="x", padx=14, pady=(6, 2), before=self._cv)
+            self._hud.pack(fill="x", padx=14, pady=(8, 4), before=self._cv)
 
     def on_show(self):
         if self._resume_level and self._resume_level > 1:
@@ -576,6 +612,11 @@ class GameScreen(BaseScreen):
         if self._after:
             self.after_cancel(self._after)
             self._after = None
+        # Bersihkan job debounce tombol yang masih menunggu supaya tidak
+        # nyangkut/error saat GameScreen ditinggalkan di tengah tombol ditahan.
+        for job in self._release_jobs.values():
+            self.after_cancel(job)
+        self._release_jobs.clear()
 
     def _timer_tick(self):
         if not self._running: return
