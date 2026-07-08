@@ -94,24 +94,58 @@ class PlayerPhysics:
 
     def update(self):
         self.vy = min(self.vy + self.GRAVITY, 18)
+
+        prev_x = self.x
+        prev_y = self.y
+
+        # --- Gerak & tabrakan horizontal (nabrak sisi platform) ---
         self.x += self.vx
+        self._collide_x(prev_x)
+
+        # --- Gerak & tabrakan vertikal (lompat dari bawah / mendarat di atas) ---
         self.y += self.vy
+        self.on_ground = False
+        self._collide_y(prev_y)
 
         if self.y >= self.GROUND_Y:
             self.y = float(self.GROUND_Y)
             self.vy = 0
             self.on_ground = True
 
-        if self.vy >= 0:
-            for px1, py1, px2, py2 in self.platforms:
-                if py2 - py1 > 40:
-                    continue
-                if (self.x + self.W > px1 and self.x < px2 and
-                        self.y + self.H > py1 and self.y + self.H - self.vy <= py1 + 6):
-                    self.y = py1 - self.H
-                    self.vy = 0
-                    self.on_ground = True
-                    break
+    def _collide_x(self, prev_x):
+        """Blokir gerak horizontal saat menabrak sisi kiri/kanan platform,
+        supaya tidak bisa tembus saat 'ditabrak' dari samping."""
+        for px1, py1, px2, py2 in self.platforms:
+            if py2 - py1 > 40:
+                continue
+            if self.y + self.H <= py1 or self.y >= py2:
+                continue  # tidak ada overlap vertikal dengan platform ini
+
+            if self.vx > 0 and prev_x + self.W <= px1 and self.x + self.W > px1:
+                self.x  = px1 - self.W
+                self.vx = 0
+            elif self.vx < 0 and prev_x >= px2 and self.x < px2:
+                self.x  = px2
+                self.vx = 0
+
+    def _collide_y(self, prev_y):
+        """Mendarat di atas platform (diinjak) saat jatuh, dan mentok/berhenti
+        saat melompat dari bawah mengenai bagian bawah platform (tidak tembus)."""
+        for px1, py1, px2, py2 in self.platforms:
+            if py2 - py1 > 40:
+                continue
+            if self.x + self.W <= px1 or self.x >= px2:
+                continue  # tidak ada overlap horizontal dengan platform ini
+
+            if self.vy >= 0 and prev_y + self.H <= py1 and self.y + self.H > py1:
+                # jatuh & mendarat di atas platform -> jadi pijakan
+                self.y  = py1 - self.H
+                self.vy = 0
+                self.on_ground = True
+            elif self.vy < 0 and prev_y >= py2 and self.y < py2:
+                # lompat dari bawah kena bagian bawah platform -> mentok, tidak tembus
+                self.y  = py2
+                self.vy = 0
 
     def rect(self):
         return (self.x, self.y, self.x + self.W, self.y + self.H)
