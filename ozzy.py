@@ -355,10 +355,24 @@ class GameScreen(BaseScreen):
         bonus = self.sc_mgr.time_bonus(self._timer)
 
         if self.lv_mgr.is_last():
+            # Level terakhir: biarkan _game_end() yang menyimpan skor,
+            # supaya tidak tersimpan dua kali ke leaderboard.
             self._game_end(won=True)
         else:
+            # Simpan skor ke leaderboard setiap kali sebuah level selesai,
+            # bukan cuma saat game benar-benar berakhir. self.lv_mgr.current
+            # di sini masih level yang baru saja diselesaikan.
+            self._save_score_checkpoint()
             self.lv_mgr.next()
             self._show_transition(bonus)
+
+    def _save_score_checkpoint(self):
+        user = self.controller.current_user
+        if user and user.get("id"):
+            try:
+                db_save_score(user["id"], self.sc_mgr.total, self.lv_mgr.current)
+            except Exception:
+                pass
 
     def _show_transition(self, bonus):
         c       = self._cv
@@ -367,35 +381,36 @@ class GameScreen(BaseScreen):
 
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_text(CW // 2, 120,
+        c.create_text(CW // 2, 100,
                       text=f"✅  Selamat! Level {prev_lv} Selesai!",
-                      font=("Courier New", 34, "bold"), fill=self.C_PRI)
-        c.create_text(CW // 2, 190,
+                      font=("Courier New", 32, "bold"), fill=self.C_PRI)
+        c.create_text(CW // 2, 160,
                       text=f"Bonus Waktu: +{bonus} poin",
-                      font=("Courier New", 22), fill=self.C_ACC)
-        c.create_text(CW // 2, 260,
+                      font=("Courier New", 20), fill=self.C_ACC)
+        c.create_text(CW // 2, 220,
                       text=f"Level {self.lv_mgr.current}: {next_cfg['nama']} — {next_cfg['tema']}",
-                      font=("Courier New", 26, "bold"), fill="#a8ff78")
-        c.create_text(CW // 2, 335,
+                      font=("Courier New", 24, "bold"), fill="#a8ff78")
+        c.create_text(CW // 2, 280,
                       text="Skor sekarang: " + f"{self.sc_mgr.total:,}",
-                      font=("Courier New", 20), fill=self.C_TXT)
+                      font=("Courier New", 18), fill=self.C_TXT)
 
-        # Tombol kiri: lanjut ke level berikutnya
-        bx1, by1, bx2, by2 = CW // 2 - 270, 400, CW // 2 - 15, 458
+        # Tombol atas: lanjut ke level berikutnya (lebar penuh, ditumpuk
+        # vertikal supaya teks panjang tidak meluber/tertutup tombol lain)
+        bx1, by1, bx2, by2 = CW // 2 - 260, 335, CW // 2 + 260, 395
         btn_rect = c.create_rectangle(bx1, by1, bx2, by2,
                                        fill=self.C_PRI, outline="", tags="btn_next")
         c.create_text((bx1 + bx2) // 2, (by1 + by2) // 2,
-                      text="▶  Lanjut ke Level Berikutnya",
-                      font=("Courier New", 15, "bold"),
+                      text="Lanjut ke Level Berikutnya",
+                      font=("Courier New", 16, "bold"),
                       fill="#000", tags="btn_next")
 
-        # Tombol kanan: kembali ke menu utama
-        mx1, my1, mx2, my2 = CW // 2 + 15, 400, CW // 2 + 270, 458
+        # Tombol bawah: kembali ke menu utama
+        mx1, my1, mx2, my2 = CW // 2 - 260, 410, CW // 2 + 260, 470
         btn_menu = c.create_rectangle(mx1, my1, mx2, my2,
                                        fill="#1e4d2b", outline="", tags="btn_menu")
         c.create_text((mx1 + mx2) // 2, (my1 + my2) // 2,
-                      text="🏠  Kembali ke Menu Utama",
-                      font=("Courier New", 15, "bold"),
+                      text="Kembali ke Menu Utama",
+                      font=("Courier New", 16, "bold"),
                       fill=self.C_TXT, tags="btn_menu")
 
         c.tag_bind("btn_next", "<Button-1>", lambda e: self._start_next())
@@ -406,7 +421,7 @@ class GameScreen(BaseScreen):
         c.tag_bind("btn_menu", "<Enter>",    lambda e: c.itemconfig(btn_menu, fill="#2e6d3b"))
         c.tag_bind("btn_menu", "<Leave>",    lambda e: c.itemconfig(btn_menu, fill="#1e4d2b"))
 
-        c.create_text(CW // 2, 500,
+        c.create_text(CW // 2, 505,
                       text="Enter/Space = Lanjut Level Berikutnya",
                       font=("Courier New", 12), fill=self.C_MUT)
 
@@ -499,10 +514,7 @@ class GameScreen(BaseScreen):
         self._running    = False
         self._transition = False
         self._cancel()
-        user = self.controller.current_user
-        if user and user.get("id"):
-            try: db_save_score(user["id"], self.sc_mgr.total, self.lv_mgr.current)
-            except: pass
+        self._save_score_checkpoint()
         self.controller.frames["GameOverScreen"].set_result(
             self.sc_mgr.total, self.lv_mgr.current, won)
         self.controller.show("GameOverScreen")
