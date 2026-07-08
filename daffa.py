@@ -116,8 +116,8 @@ class PlayerPhysics:
         """Blokir gerak horizontal saat menabrak sisi kiri/kanan platform,
         supaya tidak bisa tembus saat 'ditabrak' dari samping."""
         for px1, py1, px2, py2 in self.platforms:
-            if py2 - py1 > 40:
-                continue
+            if px2 - px1 > 1000:
+                continue  # lantai utama (sangat lebar), sudah ditangani lewat GROUND_Y
             if self.y + self.H <= py1 or self.y >= py2:
                 continue  # tidak ada overlap vertikal dengan platform ini
 
@@ -132,8 +132,8 @@ class PlayerPhysics:
         """Mendarat di atas platform (diinjak) saat jatuh, dan mentok/berhenti
         saat melompat dari bawah mengenai bagian bawah platform (tidak tembus)."""
         for px1, py1, px2, py2 in self.platforms:
-            if py2 - py1 > 40:
-                continue
+            if px2 - px1 > 1000:
+                continue  # lantai utama (sangat lebar), sudah ditangani lewat GROUND_Y
             if self.x + self.W <= px1 or self.x >= px2:
                 continue  # tidak ada overlap horizontal dengan platform ini
 
