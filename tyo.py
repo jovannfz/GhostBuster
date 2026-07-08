@@ -247,14 +247,11 @@ class SettingsScreen(BaseScreen):
                      bg=self.C_CARD, fg=self.C_PRI).grid(
                 row=i + 1, column=1, sticky="w", padx=(14, 0), pady=2)
 
-        tk.Button(self, text="🚪  Logout", font=self.F_HEAD, width=26, pady=12,
-                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2",
-                  command=self._logout).grid(row=3, column=0, pady=(30, 8))
-        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_BODY,
-                  width=26, pady=10, bg="#1e4d2b", fg=self.C_TXT,
+        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_HEAD,
+                  width=26, pady=12, bg="#1e4d2b", fg=self.C_TXT,
                   relief="flat", cursor="hand2",
                   command=lambda: self.controller.show("MenuScreen")).grid(
-            row=4, column=0, pady=4)
+            row=3, column=0, pady=(30, 8))
     
     def on_show(self):
         u = self.controller.current_user
@@ -274,22 +271,17 @@ class SettingsScreen(BaseScreen):
             self._best_lbl.config(text="Skor Terbaik: (DB tidak konek)")
             self._lv_lbl.config(text="—")
 
-    def _logout(self):
-        self.controller.set_user(None)
-        self.controller.show("AuthScreen") 
-
 # ══════════════════════════════════════════════════════════════════
 #  APP CONTROLLER — ENTRY POINT
 # ══════════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
-    # Canvas game (ozzy.CW) lebarnya 1330px + padding 14px kiri-kanan +
-    # highlight border canvas 2px kiri-kanan = ~1362px. WIDTH lama (1280)
-    # lebih sempit dari itu, sehingga bagian kanan canvas (mis. label
-    # "Level X: nama_tema" di pojok kanan atas) selalu terpotong di luar
-    # jendela. Dilebarkan supaya seluruh canvas selalu terlihat penuh.
-    WIDTH  = 1400
-    HEIGHT = 800
+    # Ukuran jendela 1280x768. Canvas game (ozzy.CW/CH) sudah disesuaikan
+    # supaya pas di dalam ukuran ini (termasuk label "Level X: nama_tema"
+    # di pojok kanan-atas canvas), jadi tidak ada lagi bagian yang
+    # terpotong di luar jendela.
+    WIDTH  = 1280
+    HEIGHT = 768
 
     def __init__(self):
         super().__init__()
