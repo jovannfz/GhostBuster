@@ -276,10 +276,6 @@ class SettingsScreen(BaseScreen):
 # ══════════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
-    # Ukuran jendela 1280x768. Canvas game (ozzy.CW/CH) sudah disesuaikan
-    # supaya pas di dalam ukuran ini (termasuk label "Level X: nama_tema"
-    # di pojok kanan-atas canvas), jadi tidak ada lagi bagian yang
-    # terpotong di luar jendela.
     WIDTH  = 1280
     HEIGHT = 768
 

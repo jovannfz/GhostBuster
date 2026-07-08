@@ -14,6 +14,7 @@ from jovan import db_save_score
 # ══════════════════════════════════════════════════════════════════
 
 CW      = 1210
+CH      = 720
 FPS_MS  = 16
 WORLD_W = 3600
 
@@ -157,25 +158,14 @@ class GameScreen(BaseScreen):
         self._parts      = []
         self._keys       = {"left": False, "right": False, "jump": False, "fire": False}
         self._fire_cd    = 0
-        # Menampung job `after()` yang dijadwalkan tiap KeyRelease, supaya
-        # auto-repeat OS (yang mengirim Release+Press berkali-kali selama
-        # tombol ditahan) tidak dianggap "tombol dilepas" -> gerakan/lompat
-        # jadi patah-patah. Lihat _key_down/_key_up.
         self._release_jobs = {}
 
-        # Menyimpan progres saat pemain memilih "Kembali ke Menu Utama"
-        # dari layar transisi antar-level, supaya bisa ditawarkan pilihan
-        # untuk melanjutkan atau mengulang saat kembali bermain.
         self._resume_level = None
         self._resume_score = 0
 
         self._build_ui()
 
     def _build_ui(self):
-        # HUD disusun pakai grid 4-kolom sama-lebar (bukan pack side left/
-        # right) supaya Level / Skor / Timer / Nyawa selalu berjarak rapi
-        # dan simetris mengikuti lebar canvas, walau teksnya panjang
-        # (mis. "Level 2 — Medium").
         hud = tk.Frame(self, bg=self.BG)
         hud.pack(fill="x", padx=14, pady=(8, 4))
         for col in range(4):
@@ -238,9 +228,6 @@ class GameScreen(BaseScreen):
 
     def _key_down(self, e):
         k = e.keysym
-        # Jika ada job "lepas tombol" yang masih menunggu untuk keysym ini,
-        # batalkan -> itu berarti event Release sebelumnya cuma bagian dari
-        # auto-repeat OS (tombol masih ditahan), bukan benar-benar dilepas.
         job = self._release_jobs.pop(k, None)
         if job:
             self.after_cancel(job)
@@ -248,10 +235,6 @@ class GameScreen(BaseScreen):
 
     def _key_up(self, e):
         k = e.keysym
-        # Jangan langsung matikan aksinya. Tunggu sebentar (satu "beat"
-        # auto-repeat) -- kalau tidak ada KeyPress susulan untuk keysym
-        # yang sama, baru dianggap benar-benar dilepas. Ini mencegah
-        # gerak/lompat jadi patah-patah saat tombol ditahan lama.
         self._release_jobs[k] = self.after(
             35, lambda: self._apply_release(k))
 
@@ -260,9 +243,6 @@ class GameScreen(BaseScreen):
         self._set_key(k, False)
 
     def _hide_hud(self):
-        # Sembunyikan bar Level/Skor/Timer/Nyawa di atas canvas, dipakai
-        # saat layar "Lanjutkan Permainan?" atau transisi antar-level
-        # ditampilkan, supaya tidak ada info gameplay lama yang nyangkut.
         self._hud.pack_forget()
 
     def _show_hud(self):
@@ -310,10 +290,6 @@ class GameScreen(BaseScreen):
         if not self._running or self._paused or self._transition:
             return
         self._update()
-        # _update() bisa memicu _level_done()/_game_end() di tengah jalan,
-        # yang mengubah _running/_transition dan menggambar layar lain
-        # (mis. layar "Selamat" atau Game Over). Cek ulang di sini supaya
-        # _draw() tidak menimpa layar tersebut dengan tampilan gameplay biasa.
         if not self._running or self._transition:
             return
         self._draw()
@@ -417,13 +393,8 @@ class GameScreen(BaseScreen):
         bonus = self.sc_mgr.time_bonus(self._timer, self.lv_mgr.current)
 
         if self.lv_mgr.is_last():
-            # Level terakhir (Level 3) selesai -> ini yang dianggap "menang",
-            # skor baru disimpan ke leaderboard di sini.
             self._game_end(won=True)
         else:
-            # Level 1/2 selesai: lanjut ke level berikutnya, TANPA
-            # menyimpan skor ke leaderboard (leaderboard hanya untuk
-            # yang sudah menyelesaikan seluruh 3 level).
             self.lv_mgr.next()
             self._show_transition(bonus)
 
@@ -597,10 +568,6 @@ class GameScreen(BaseScreen):
         if not self._paused: self._loop()
 
     def _back_menu(self):
-        # Simpan progres (level & skor saat ini) sama seperti saat menekan
-        # "Kembali ke Menu Utama" di layar transisi antar-level, supaya saat
-        # pemain memilih main lagi, ia ditawari pilihan Lanjut / Ulang alih-
-        # alih otomatis kembali ke Level 1.
         self._resume_level = self.lv_mgr.current
         self._resume_score = self.sc_mgr.total
         self._running = False; self._transition = False
@@ -611,8 +578,6 @@ class GameScreen(BaseScreen):
         if self._after:
             self.after_cancel(self._after)
             self._after = None
-        # Bersihkan job debounce tombol yang masih menunggu supaya tidak
-        # nyangkut/error saat GameScreen ditinggalkan di tengah tombol ditahan.
         for job in self._release_jobs.values():
             self.after_cancel(job)
         self._release_jobs.clear()
