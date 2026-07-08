@@ -198,39 +198,45 @@ class SettingsScreen(BaseScreen):
         super().__init__(parent, controller)
         self._build()
 
+    # Font kecil khusus layar ini, supaya semua konten (termasuk tombol
+    # "Kembali ke Menu") muat dalam tinggi window 768px tanpa terpotong.
+    F_HEAD_S = ("Courier New", 14, "bold")
+    F_BODY_S = ("Courier New", 12)
+    F_KEY_S  = ("Courier New", 11, "bold")
+
     def _build(self):
         self.columnconfigure(0, weight=1)
 
         tk.Label(self, text="⚙  PENGATURAN",
-                 font=("Courier New", 36, "bold"),
-                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(60, 24))
+                 font=("Courier New", 22, "bold"),
+                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(22, 10))
 
-        card = tk.Frame(self, bg=self.C_CARD, padx=70, pady=32)
-        card.grid(row=1, column=0, pady=8)
+        card = tk.Frame(self, bg=self.C_CARD, padx=50, pady=16)
+        card.grid(row=1, column=0, pady=4)
         card.columnconfigure(1, weight=1) 
 
         tk.Label(card, text="👤  Profil Pemain",
-                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_ACC).grid(
-            row=0, column=0, columnspan=2, pady=(0, 14), sticky="w")
+                 font=self.F_HEAD_S, bg=self.C_CARD, fg=self.C_ACC).grid(
+            row=0, column=0, columnspan=2, pady=(0, 8), sticky="w")
 
         self._uname_lbl = tk.Label(card, text="Username: —",
-                                   font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
-        self._uname_lbl.grid(row=1, column=0, columnspan=2, sticky="w", pady=3)
+                                   font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
+        self._uname_lbl.grid(row=1, column=0, columnspan=2, sticky="w", pady=2)
 
         self._best_lbl = tk.Label(card, text="Skor Terbaik: —",
-                                  font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
-        self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=3)
+                                  font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
+        self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=2)
 
         self._lv_lbl = tk.Label(card, text="Level Tertinggi: —",
-                                font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT)
-        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=3)
+                                font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
+        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=2)
 
-        card2 = tk.Frame(self, bg=self.C_CARD, padx=70, pady=30)
-        card2.grid(row=2, column=0, pady=8) 
+        card2 = tk.Frame(self, bg=self.C_CARD, padx=50, pady=14)
+        card2.grid(row=2, column=0, pady=4) 
 
         tk.Label(card2, text="🎮  Kontrol",
-                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_ACC).grid(
-            row=0, column=0, columnspan=2, pady=(0, 12), sticky="w")
+                 font=self.F_HEAD_S, bg=self.C_CARD, fg=self.C_ACC).grid(
+            row=0, column=0, columnspan=2, pady=(0, 8), sticky="w")
 
         controls = [
             ("Gerak",   "← → / A D"),
@@ -240,18 +246,18 @@ class SettingsScreen(BaseScreen):
             ("Kembali", "Tombol Menu di layar"),
         ]
         for i, (act, key) in enumerate(controls):
-            tk.Label(card2, text=f"{act}:", font=self.F_BODY,
-                     bg=self.C_CARD, fg=self.C_MUT, width=12, anchor="w").grid(
-                row=i + 1, column=0, sticky="w", pady=2)
-            tk.Label(card2, text=key, font=("Courier New", 12, "bold"),
+            tk.Label(card2, text=f"{act}:", font=self.F_BODY_S,
+                     bg=self.C_CARD, fg=self.C_MUT, width=10, anchor="w").grid(
+                row=i + 1, column=0, sticky="w", pady=1)
+            tk.Label(card2, text=key, font=self.F_KEY_S,
                      bg=self.C_CARD, fg=self.C_PRI).grid(
-                row=i + 1, column=1, sticky="w", padx=(14, 0), pady=2)
+                row=i + 1, column=1, sticky="w", padx=(10, 0), pady=1)
 
-        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_HEAD,
-                  width=26, pady=12, bg="#1e4d2b", fg=self.C_TXT,
+        tk.Button(self, text="🏠  Kembali ke Menu", font=self.F_HEAD_S,
+                  width=22, pady=8, bg="#1e4d2b", fg=self.C_TXT,
                   relief="flat", cursor="hand2",
                   command=lambda: self.controller.show("MenuScreen")).grid(
-            row=3, column=0, pady=(30, 8))
+            row=3, column=0, pady=(14, 10))
     
     def on_show(self):
         u = self.controller.current_user
