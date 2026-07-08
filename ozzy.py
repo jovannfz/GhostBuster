@@ -14,7 +14,7 @@ from jovan import db_save_score
 # ══════════════════════════════════════════════════════════════════
 
 CW      = 1210
-CH      = 720
+CH      = 660
 FPS_MS  = 16
 WORLD_W = 3600
 
@@ -166,10 +166,10 @@ class GameScreen(BaseScreen):
         self._build_ui()
 
     def _build_ui(self):
+        # HUD: Level, Skor, dan Waktu dikelompokkan berdekatan di kiri,
+        # nyawa (HP) di kanan -> tidak lagi tersebar jauh di lebar layar.
         hud = tk.Frame(self, bg=self.BG)
         hud.pack(fill="x", padx=14, pady=(8, 4))
-        for col in range(4):
-            hud.columnconfigure(col, weight=1)
         self._hud = hud
 
         self._lv_var = tk.StringVar(value="Level 1 — Easy")
@@ -177,39 +177,46 @@ class GameScreen(BaseScreen):
         self._tm_var = tk.StringVar(value="⏱ 120")
         self._hp_var = tk.StringVar(value="❤ ❤ ❤")
 
-        tk.Label(hud, textvariable=self._lv_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_PRI, anchor="w").grid(
-            row=0, column=0, sticky="w")
-        tk.Label(hud, textvariable=self._sc_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_ACC, anchor="center").grid(
-            row=0, column=1, sticky="ew")
-        tk.Label(hud, textvariable=self._tm_var, font=self.F_HEAD,
-                 bg=self.BG, fg="#fff", anchor="center").grid(
-            row=0, column=2, sticky="ew")
+        info = tk.Frame(hud, bg=self.BG)
+        info.pack(side="left")
+
+        tk.Label(info, textvariable=self._lv_var, font=self.F_HEAD,
+                 bg=self.BG, fg=self.C_PRI).pack(side="left")
+        tk.Label(info, textvariable=self._sc_var, font=self.F_HEAD,
+                 bg=self.BG, fg=self.C_ACC).pack(side="left", padx=(20, 0))
+        tk.Label(info, textvariable=self._tm_var, font=self.F_HEAD,
+                 bg=self.BG, fg="#fff").pack(side="left", padx=(20, 0))
+
         tk.Label(hud, textvariable=self._hp_var, font=self.F_HEAD,
-                 bg=self.BG, fg=self.C_DNG, anchor="e").grid(
-            row=0, column=3, sticky="e")
+                 bg=self.BG, fg=self.C_DNG).pack(side="right")
 
         self._cv = tk.Canvas(self, width=CW, height=CH,
                              bg="#1a2a5e", highlightthickness=2,
                              highlightbackground=self.C_PRI)
         self._cv.pack(padx=14, pady=(0, 4))
 
-        ctrl = tk.Frame(self, bg=self.BG)
-        ctrl.pack(fill="x", padx=14, pady=4)
+        # Legend kontrol -> overlay kecil di pojok kiri-bawah canvas
+        # (bukan baris terpisah di bawah canvas), supaya tetap muat di
+        # tinggi window 768px.
+        self._legend = tk.Label(
+            self, text="Arrow/WASD Gerak | Space/W/↑ Lompat | Z/X/J Tembak",
+            font=("Courier New", 10), bg="#0d1a2e", fg="#8899aa",
+            padx=6, pady=2)
+        self._legend.place(in_=self._cv, x=10, y=-10, rely=1.0, anchor="sw")
 
-        tk.Label(ctrl, text="Arrow/WASD = Gerak  |  Space/W/↑ = Lompat  |  Z/X/J = Tembak",
-                 font=self.F_SM, bg=self.BG, fg="#555").pack(side="left", padx=8)
-
-        self._pause_btn = tk.Button(ctrl, text="⏸ Pause",
-                                    font=self.F_BODY, bg=self.C_ACC, fg="#000",
-                                    relief="flat", cursor="hand2", padx=10,
+        # Tombol Pause & Menu -> overlay berdekatan di pojok kanan-bawah canvas.
+        self._btn_overlay = tk.Frame(self._cv, bg="#0d1a2e")
+        self._pause_btn = tk.Button(self._btn_overlay, text="⏸ Pause",
+                                    font=self.F_SM, bg=self.C_ACC, fg="#000",
+                                    relief="flat", cursor="hand2", padx=8, pady=3,
                                     command=self._toggle_pause)
-        self._pause_btn.pack(side="left", padx=6)
+        self._pause_btn.pack(side="left", padx=(4, 2), pady=4)
 
-        tk.Button(ctrl, text="🏠 Menu", font=self.F_BODY,
-                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2", padx=10,
-                  command=self._back_menu).pack(side="right", padx=6)
+        tk.Button(self._btn_overlay, text="🏠 Menu", font=self.F_SM,
+                  bg=self.C_DNG, fg="#fff", relief="flat", cursor="hand2", padx=8, pady=3,
+                  command=self._back_menu).pack(side="left", padx=(2, 4), pady=4)
+
+        self._btn_overlay.place(in_=self._cv, x=-10, y=-10, relx=1.0, rely=1.0, anchor="se")
 
         self.bind_all("<KeyPress>",   self._key_down)
         self.bind_all("<KeyRelease>", self._key_up)
@@ -244,10 +251,14 @@ class GameScreen(BaseScreen):
 
     def _hide_hud(self):
         self._hud.pack_forget()
+        self._btn_overlay.place_forget()
+        self._legend.place_forget()
 
     def _show_hud(self):
         if not self._hud.winfo_ismapped():
             self._hud.pack(fill="x", padx=14, pady=(8, 4), before=self._cv)
+        self._btn_overlay.place(in_=self._cv, x=-10, y=-10, relx=1.0, rely=1.0, anchor="se")
+        self._legend.place(in_=self._cv, x=10, y=-10, rely=1.0, anchor="sw")
 
     def on_show(self):
         if self._resume_level and self._resume_level > 1:
