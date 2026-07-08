@@ -13,9 +13,8 @@ from jovan import db_save_score
 #  KONSTANTA CANVAS & DUNIA
 # ══════════════════════════════════════════════════════════════════
 
-CW      = 1330   # lebar canvas
-CH      = 580    # tinggi canvas
-FPS_MS  = 16     # ~62 fps
+CW      = 1210
+FPS_MS  = 16
 WORLD_W = 3600
 
 PLATFORMS = [
