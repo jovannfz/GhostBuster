@@ -14,7 +14,7 @@ from jovan import db_save_score
 # ══════════════════════════════════════════════════════════════════
 
 CW      = 1210
-CH      = 660
+CH      = 600
 FPS_MS  = 16
 WORLD_W = 3600
 
@@ -651,9 +651,16 @@ class GameScreen(BaseScreen):
             rx = px2 - camx
             if rx > CW + 20 or rx + pw < -20:
                 continue
-            c.create_rectangle(rx, py2, rx + pw, py2 + ph, fill=t["platform"], outline="")
+            # Lantai utama (platform sangat lebar) harus menepel sampai
+            # dasar canvas, bukan cuma setinggi `ph` -> sebelumnya ini
+            # menyisakan strip biru (warna bg canvas) di bawah lantai
+            # sehingga terlihat "mengambang". Platform kecil (pijakan
+            # melayang) tetap memakai tinggi aslinya.
+            is_floor = pw > 1000
+            eff_ph   = (CH - py2) if is_floor else ph
+            c.create_rectangle(rx, py2, rx + pw, py2 + eff_ph, fill=t["platform"], outline="")
             for bx2 in range(0, pw, 22):
-                for by2 in range(4, ph, 14):
+                for by2 in range(4, eff_ph, 14):
                     off = (by2 // 14 % 2) * 11
                     c.create_rectangle(rx + bx2 + off, py2 + by2,
                                        rx + bx2 + off + 19, py2 + by2 + 11,
