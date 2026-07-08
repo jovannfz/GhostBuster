@@ -46,7 +46,6 @@ class LevelManager:
 
 class ScoreManager:
     BASE_COIN = 50
-    TIME_MULT = 5
 
     def __init__(self, mult=1.0):
         self.mult  = mult
@@ -55,13 +54,15 @@ class ScoreManager:
     def ghost_kill(self, base=100):
         g = int(base * self.mult); self.total += g; return g
 
-    def coin(self):
-        # Nilai koin dibuat flat (tidak dikali mult level), supaya di semua
-        # level 1 koin = +1 skor (bukan 50/75/100 sesuai mult level).
-        g = 1; self.total += g; return g
+    def coin(self, level=1):
+        # Skor per koin mengikuti nomor level: Level 1 -> +1, Level 2 -> +2,
+        # Level 3 -> +3.
+        g = level; self.total += g; return g
 
-    def time_bonus(self, secs):
-        b = int(secs * self.TIME_MULT * self.mult); self.total += b; return b
+    def time_bonus(self, secs, level=1):
+        # Bonus waktu = sisa detik x nomor level yang baru diselesaikan.
+        # Level 1 -> x1, Level 2 -> x2, Level 3 -> x3.
+        b = int(secs * level); self.total += b; return b
 
     def penalty(self, amt=50):
         self.total = max(0, self.total - amt)
