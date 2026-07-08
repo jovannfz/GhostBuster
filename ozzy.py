@@ -2,12 +2,12 @@ import tkinter as tk
 import math
 
 # Import dari file teman-teman
-from tyo_game_logic import (
+from daffa import (
     LevelManager, ScoreManager, PlayerPhysics,
     GhostAI, CoinItem, Projectile, Particle,
     _rect_collide, GROUND_Y, P_FLOOR
 )
-from jovan_db_auth import db_save_score
+from jovan import db_save_score
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -40,12 +40,12 @@ PLATFORMS = [
 ]
 
 COIN_POS = [
-    (280, 345, False), (400, 300, False), (560, 295, True),  (700, 250, False),
-    (840, 245, False), (960, 310, True),  (1100, 305, False),(1300, 235, False),
-    (1450, 235, True), (1620, 275, False),(1760, 275, False),(1900, 195, True),
-    (2060, 195, False),(2200, 195, False),(2430, 165, True), (2580, 165, False),
-    (2720, 235, False),(2860, 235, True), (3000, 155, False),(3160, 225, False),
-    (3300, 225, True), (3440, 145, False),
+    (280, 345, False), (400, 300, False), (560, 295, False), (700, 250, False),
+    (840, 245, False), (960, 310, False), (1100, 305, False),(1300, 235, False),
+    (1450, 235, False), (1620, 275, False),(1760, 275, False),(1900, 195, False),
+    (2060, 195, False),(2200, 195, False),(2430, 165, False), (2580, 165, False),
+    (2720, 235, False),(2860, 235, False), (3000, 155, False),(3160, 225, False),
+    (3300, 225, False), (3440, 145, False),
 ]
 
 GHOST_POS = [
@@ -55,7 +55,8 @@ GHOST_POS = [
     (3480, 150, 1),(3550, 200, 0),
 ]
 
-PLAT_RECTS = [(p[0], p[1], p[0] + p[2], p[1] + p[3]) for p in PLATFORMS] 
+PLAT_RECTS = [(p[0], p[1], p[0] + p[2], p[1] + p[3]) for p in PLATFORMS]
+
 
 # ══════════════════════════════════════════════════════════════════
 #  FUNGSI DRAW KARAKTER
@@ -93,6 +94,7 @@ def _draw_player(c, x, y, w, h, on_ground, frame):
     c.create_arc(x + 8, y + 12, x + 22, y + 20, start=200, extent=140,
                  style="arc", outline="#444", width=2)
 
+
 # ══════════════════════════════════════════════════════════════════
 #  BASE SCREEN
 # ══════════════════════════════════════════════════════════════════
@@ -115,6 +117,7 @@ class BaseScreen(tk.Frame):
         self.controller = controller
 
     def on_show(self): pass
+
 
 # ══════════════════════════════════════════════════════════════════
 #  SCREEN — GAME UTAMA
@@ -141,6 +144,12 @@ class GameScreen(BaseScreen):
         self._parts      = []
         self._keys       = {"left": False, "right": False, "jump": False, "fire": False}
         self._fire_cd    = 0
+
+        # Menyimpan progres saat pemain memilih "Kembali ke Menu Utama"
+        # dari layar transisi antar-level, supaya bisa ditawarkan pilihan
+        # untuk melanjutkan atau mengulang saat kembali bermain.
+        self._resume_level = None
+        self._resume_score = 0
 
         self._build_ui()
 
@@ -201,8 +210,11 @@ class GameScreen(BaseScreen):
         if k in ("z", "Z", "x", "X"):       self._keys["fire"]  = False
 
     def on_show(self):
-        self.lv_mgr.reset()
-        self._init_level()
+        if self._resume_level and self._resume_level > 1:
+            self._show_resume_choice()
+        else:
+            self.lv_mgr.reset()
+            self._init_level()
 
     def _init_level(self):
         cfg = self.lv_mgr.cfg()
@@ -237,6 +249,12 @@ class GameScreen(BaseScreen):
         if not self._running or self._paused or self._transition:
             return
         self._update()
+        # _update() bisa memicu _level_done()/_game_end() di tengah jalan,
+        # yang mengubah _running/_transition dan menggambar layar lain
+        # (mis. layar "Selamat" atau Game Over). Cek ulang di sini supaya
+        # _draw() tidak menimpa layar tersebut dengan tampilan gameplay biasa.
+        if not self._running or self._transition:
+            return
         self._draw()
         self._after = self.after(FPS_MS, self._loop)
 
@@ -338,10 +356,23 @@ class GameScreen(BaseScreen):
         bonus = self.sc_mgr.time_bonus(self._timer)
 
         if self.lv_mgr.is_last():
+            # Level terakhir (Level 3) selesai -> ini yang dianggap "menang",
+            # skor baru disimpan ke leaderboard di sini.
             self._game_end(won=True)
         else:
+            # Level 1/2 selesai: lanjut ke level berikutnya, TANPA
+            # menyimpan skor ke leaderboard (leaderboard hanya untuk
+            # yang sudah menyelesaikan seluruh 3 level).
             self.lv_mgr.next()
             self._show_transition(bonus)
+
+    def _save_score_checkpoint(self):
+        user = self.controller.current_user
+        if user and user.get("id"):
+            try:
+                db_save_score(user["id"], self.sc_mgr.total, self.lv_mgr.current)
+            except Exception:
+                pass
 
     def _show_transition(self, bonus):
         c       = self._cv
@@ -350,30 +381,50 @@ class GameScreen(BaseScreen):
 
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_text(CW // 2, 150,
-                      text=f"✅  Level {prev_lv} Selesai!",
-                      font=("Courier New", 36, "bold"), fill=self.C_PRI)
-        c.create_text(CW // 2, 230,
+        c.create_text(CW // 2, 100,
+                      text=f"✅  Selamat! Level {prev_lv} Selesai!",
+                      font=("Courier New", 32, "bold"), fill=self.C_PRI)
+        c.create_text(CW // 2, 160,
                       text=f"Bonus Waktu: +{bonus} poin",
-                      font=("Courier New", 24), fill=self.C_ACC)
-        c.create_text(CW // 2, 310,
+                      font=("Courier New", 20), fill=self.C_ACC)
+        c.create_text(CW // 2, 220,
                       text=f"Level {self.lv_mgr.current}: {next_cfg['nama']} — {next_cfg['tema']}",
-                      font=("Courier New", 28, "bold"), fill="#a8ff78")
-        c.create_text(CW // 2, 400,
+                      font=("Courier New", 24, "bold"), fill="#a8ff78")
+        c.create_text(CW // 2, 280,
                       text="Skor sekarang: " + f"{self.sc_mgr.total:,}",
-                      font=("Courier New", 20), fill=self.C_TXT)
+                      font=("Courier New", 18), fill=self.C_TXT)
 
-        bx1, by1, bx2, by2 = CW // 2 - 160, 455, CW // 2 + 160, 510
+        # Tombol atas: lanjut ke level berikutnya (lebar penuh, ditumpuk
+        # vertikal supaya teks panjang tidak meluber/tertutup tombol lain)
+        bx1, by1, bx2, by2 = CW // 2 - 260, 335, CW // 2 + 260, 395
         btn_rect = c.create_rectangle(bx1, by1, bx2, by2,
                                        fill=self.C_PRI, outline="", tags="btn_next")
-        c.create_text(CW // 2, (by1 + by2) // 2,
-                      text="▶  Lanjut ke Level Berikutnya",
+        c.create_text((bx1 + bx2) // 2, (by1 + by2) // 2,
+                      text="Lanjut ke Level Berikutnya",
                       font=("Courier New", 16, "bold"),
                       fill="#000", tags="btn_next")
+
+        # Tombol bawah: kembali ke menu utama
+        mx1, my1, mx2, my2 = CW // 2 - 260, 410, CW // 2 + 260, 470
+        btn_menu = c.create_rectangle(mx1, my1, mx2, my2,
+                                       fill="#1e4d2b", outline="", tags="btn_menu")
+        c.create_text((mx1 + mx2) // 2, (my1 + my2) // 2,
+                      text="Kembali ke Menu Utama",
+                      font=("Courier New", 16, "bold"),
+                      fill=self.C_TXT, tags="btn_menu")
 
         c.tag_bind("btn_next", "<Button-1>", lambda e: self._start_next())
         c.tag_bind("btn_next", "<Enter>",    lambda e: c.itemconfig(btn_rect, fill=self.C_ACC))
         c.tag_bind("btn_next", "<Leave>",    lambda e: c.itemconfig(btn_rect, fill=self.C_PRI))
+
+        c.tag_bind("btn_menu", "<Button-1>", lambda e: self._back_menu_from_transition())
+        c.tag_bind("btn_menu", "<Enter>",    lambda e: c.itemconfig(btn_menu, fill="#2e6d3b"))
+        c.tag_bind("btn_menu", "<Leave>",    lambda e: c.itemconfig(btn_menu, fill="#1e4d2b"))
+
+        c.create_text(CW // 2, 505,
+                      text="Enter/Space = Lanjut Level Berikutnya",
+                      font=("Courier New", 12), fill=self.C_MUT)
+
         self.bind_all("<Return>", lambda e: self._start_next())
         self.bind_all("<space>",  lambda e: self._start_next())
 
@@ -385,14 +436,88 @@ class GameScreen(BaseScreen):
         self._init_level()
         self.sc_mgr.total = saved
 
+    def _back_menu_from_transition(self):
+        """Dipanggil saat pemain memilih 'Kembali ke Menu Utama' setelah
+        menyelesaikan sebuah level. Progres (level & skor) disimpan agar
+        saat pemain memilih main lagi, ia bisa memilih lanjut atau mengulang."""
+        self.unbind_all("<Return>")
+        self.unbind_all("<space>")
+        self._resume_level = self.lv_mgr.current
+        self._resume_score = self.sc_mgr.total
+        self._transition = False
+        self._running    = False
+        self._cancel()
+        self.controller.show("MenuScreen")
+
+    def _show_resume_choice(self):
+        """Layar pilihan yang muncul saat GameScreen dibuka kembali dan ada
+        progres level tersimpan: lanjut dari level tersimpan, atau mengulang
+        dari Level 1."""
+        c = self._cv
+        self._running    = False
+        self._transition = True
+        self._cancel()
+
+        c.delete("all")
+        c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
+        c.create_text(CW // 2, 150,
+                      text="🎮  Lanjutkan Permainan?",
+                      font=("Courier New", 34, "bold"), fill=self.C_PRI)
+        c.create_text(CW // 2, 215,
+                      text=(f"Progres tersimpan: Level {self._resume_level} "
+                            f"— Skor {self._resume_score:,}"),
+                      font=("Courier New", 18), fill=self.C_TXT)
+
+        bx1, by1, bx2, by2 = CW // 2 - 220, 290, CW // 2 + 220, 345
+        btn_resume = c.create_rectangle(bx1, by1, bx2, by2,
+                                         fill=self.C_PRI, outline="", tags="btn_resume")
+        c.create_text(CW // 2, (by1 + by2) // 2,
+                      text=f"▶  Lanjut ke Level {self._resume_level}",
+                      font=("Courier New", 16, "bold"),
+                      fill="#000", tags="btn_resume")
+
+        rx1, ry1, rx2, ry2 = CW // 2 - 220, 365, CW // 2 + 220, 420
+        btn_restart = c.create_rectangle(rx1, ry1, rx2, ry2,
+                                          fill=self.C_DNG, outline="", tags="btn_restart")
+        c.create_text(CW // 2, (ry1 + ry2) // 2,
+                      text="🔄  Ulang dari Level 1",
+                      font=("Courier New", 16, "bold"),
+                      fill="#fff", tags="btn_restart")
+
+        c.tag_bind("btn_resume", "<Button-1>", lambda e: self._confirm_resume())
+        c.tag_bind("btn_resume", "<Enter>",    lambda e: c.itemconfig(btn_resume, fill=self.C_ACC))
+        c.tag_bind("btn_resume", "<Leave>",    lambda e: c.itemconfig(btn_resume, fill=self.C_PRI))
+
+        c.tag_bind("btn_restart", "<Button-1>", lambda e: self._confirm_restart())
+        c.tag_bind("btn_restart", "<Enter>",    lambda e: c.itemconfig(btn_restart, fill="#ff7a9c"))
+        c.tag_bind("btn_restart", "<Leave>",    lambda e: c.itemconfig(btn_restart, fill=self.C_DNG))
+
+    def _confirm_resume(self):
+        lvl   = self._resume_level
+        score = self._resume_score
+        self._resume_level = None
+        self._resume_score = 0
+        self._transition   = False
+        self.lv_mgr.current = lvl
+        self._init_level()
+        self.sc_mgr.total = score
+        self._update_hud()
+
+    def _confirm_restart(self):
+        self._resume_level = None
+        self._resume_score = 0
+        self._transition   = False
+        self.lv_mgr.reset()
+        self._init_level()
+
     def _game_end(self, won):
         self._running    = False
         self._transition = False
         self._cancel()
-        user = self.controller.current_user
-        if user and user.get("id"):
-            try: db_save_score(user["id"], self.sc_mgr.total, self.lv_mgr.current)
-            except: pass
+        # Leaderboard hanya untuk pemain yang benar-benar menyelesaikan
+        # seluruh 3 level (menang). Kalah di tengah jalan tidak dicatat.
+        if won:
+            self._save_score_checkpoint()
         self.controller.frames["GameOverScreen"].set_result(
             self.sc_mgr.total, self.lv_mgr.current, won)
         self.controller.show("GameOverScreen")
