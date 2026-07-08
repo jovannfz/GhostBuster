@@ -226,7 +226,7 @@ class SettingsScreen(BaseScreen):
         controls = [
             ("Gerak",   "← → / A D"),
             ("Lompat",  "SPACE / ↑ / W"),
-            ("Tembak",  "Z  atau  J"),
+            ("Tembak",  "Z  atau  X"),
             ("Pause",   "Tombol Pause di layar"),
             ("Kembali", "Tombol Menu di layar"),
         ]
@@ -332,4 +332,4 @@ if __name__ == "__main__":
                 "Pastikan MySQL sudah berjalan dan konfigurasi\n"
                 "DB_CONFIG di bagian atas file sudah benar.")
         except Exception:
-            pass 
+            pass
