@@ -13,7 +13,7 @@ DB_CONFIG = {
     "host":     "localhost",
     "user":     "root",
     "password": "",
-    "database": "ghostbuster",
+    "database": "ghostbusters_db",
     "port":     3306,
 }
 
@@ -85,8 +85,7 @@ def db_save_score(user_id: int, score: int, level_reached: int):
 
 def db_get_leaderboard(limit: int = 10) -> list:
     return _execute_query(
-        """SELECT u.username, s.score, s.level_reached,
-                  DATE_FORMAT(s.waktu_bermain,'%%d/%%m/%%Y %%H:%%i') AS tanggal
+        """SELECT u.username, s.score
            FROM scores s JOIN users u ON s.user_id=u.id
            ORDER BY s.score DESC LIMIT %s""",
         (limit,), fetch=True)
