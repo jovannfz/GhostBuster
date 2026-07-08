@@ -235,7 +235,7 @@ class SettingsScreen(BaseScreen):
         controls = [
             ("Gerak",   "← → / A D"),
             ("Lompat",  "SPACE / ↑ / W"),
-            ("Tembak",  "Z  atau  X"),
+            ("Tembak",  "Z  atau  X  /  J"),
             ("Pause",   "Tombol Pause di layar"),
             ("Kembali", "Tombol Menu di layar"),
         ]
@@ -283,8 +283,13 @@ class SettingsScreen(BaseScreen):
 # ══════════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
-    WIDTH  = 1280
-    HEIGHT = 768
+    # Canvas game (ozzy.CW) lebarnya 1330px + padding 14px kiri-kanan +
+    # highlight border canvas 2px kiri-kanan = ~1362px. WIDTH lama (1280)
+    # lebih sempit dari itu, sehingga bagian kanan canvas (mis. label
+    # "Level X: nama_tema" di pojok kanan atas) selalu terpotong di luar
+    # jendela. Dilebarkan supaya seluruh canvas selalu terlihat penuh.
+    WIDTH  = 1400
+    HEIGHT = 800
 
     def __init__(self):
         super().__init__()
