@@ -226,7 +226,7 @@ class SettingsScreen(BaseScreen):
         controls = [
             ("Gerak",   "← → / A D"),
             ("Lompat",  "SPACE / ↑ / W"),
-            ("Tembak",  "Z  atau  X"),
+            ("Tembak",  "Z  atau  J"),
             ("Pause",   "Tombol Pause di layar"),
             ("Kembali", "Tombol Menu di layar"),
         ]
