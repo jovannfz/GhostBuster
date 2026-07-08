@@ -248,6 +248,12 @@ class GameScreen(BaseScreen):
         if not self._running or self._paused or self._transition:
             return
         self._update()
+        # _update() bisa memicu _level_done()/_game_end() di tengah jalan,
+        # yang mengubah _running/_transition dan menggambar layar lain
+        # (mis. layar "Selamat" atau Game Over). Cek ulang di sini supaya
+        # _draw() tidak menimpa layar tersebut dengan tampilan gameplay biasa.
+        if not self._running or self._transition:
+            return
         self._draw()
         self._after = self.after(FPS_MS, self._loop)
 
