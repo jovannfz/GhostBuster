@@ -48,9 +48,24 @@ COIN_POS = [
 ]
 
 GHOST_POS = [
-    (420, 300, 0), (680, 250, 1), (900, 250, 0), (1180, 240, 2),
-    (1380, 240, 0),(1700, 200, 1),(1960, 260, 0),(2240, 170, 2),
-    (2500, 240, 0),(2760, 240, 1),(3020, 160, 0),(3260, 230, 2),
+    # Hantu tambahan (y ~432) ditaruh sejajar tanah, di sela-sela hantu
+    # yang sudah ada di platform atas -> pemain harus lompat/tembak dari
+    # bawah juga, bikin levelnya sedikit lebih susah.
+    (420, 300, 0),
+    (550, 432, 1),   # NEW - hantu di tanah
+    (680, 250, 1), (900, 250, 0),
+    (1050, 432, 0),  # NEW - hantu di tanah
+    (1180, 240, 2),
+    (1380, 240, 0),
+    (1550, 432, 2),  # NEW - hantu di tanah
+    (1700, 200, 1),(1960, 260, 0),
+    (2050, 432, 1),  # NEW - hantu di tanah
+    (2240, 170, 2),
+    (2500, 240, 0),
+    (2650, 432, 0),  # NEW - hantu di tanah
+    (2760, 240, 1),(3020, 160, 0),
+    (3150, 432, 2),  # NEW - hantu di tanah
+    (3260, 230, 2),
     (3480, 150, 1),(3550, 200, 0),
 ]
 
@@ -513,6 +528,11 @@ class GameScreen(BaseScreen):
         self._running    = False
         self._transition = False
         self._cancel()
+        # Game benar-benar selesai (menang/kalah) -> bersihkan progres
+        # tersimpan supaya "Main Lagi" berikutnya mulai dari skor 0 /
+        # Level 1, bukan melanjutkan skor game sebelumnya.
+        self._resume_level = None
+        self._resume_score = 0
         # Leaderboard hanya untuk pemain yang benar-benar menyelesaikan
         # seluruh 3 level (menang). Kalah di tengah jalan tidak dicatat.
         if won:
@@ -528,6 +548,12 @@ class GameScreen(BaseScreen):
         if not self._paused: self._loop()
 
     def _back_menu(self):
+        # Simpan progres (level & skor saat ini) sama seperti saat menekan
+        # "Kembali ke Menu Utama" di layar transisi antar-level, supaya saat
+        # pemain memilih main lagi, ia ditawari pilihan Lanjut / Ulang alih-
+        # alih otomatis kembali ke Level 1.
+        self._resume_level = self.lv_mgr.current
+        self._resume_score = self.sc_mgr.total
         self._running = False; self._transition = False
         self._cancel()
         self.controller.show("MenuScreen")
