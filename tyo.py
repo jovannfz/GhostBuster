@@ -198,45 +198,46 @@ class SettingsScreen(BaseScreen):
         super().__init__(parent, controller)
         self._build()
 
-    # Font kecil khusus layar ini, supaya semua konten (termasuk tombol
-    # "Kembali ke Menu") muat dalam tinggi window 768px tanpa terpotong.
-    F_HEAD_S = ("Courier New", 14, "bold")
-    F_BODY_S = ("Courier New", 12)
-    F_KEY_S  = ("Courier New", 11, "bold")
+    # Font layar ini disesuaikan agar judul lebih terbaca namun semua
+    # konten (termasuk tombol "Kembali ke Menu") tetap muat dalam
+    # tinggi window 720px tanpa terpotong.
+    F_HEAD_S = ("Courier New", 15, "bold")
+    F_BODY_S = ("Courier New", 13)
+    F_KEY_S  = ("Courier New", 12, "bold")
 
     def _build(self):
         self.columnconfigure(0, weight=1)
 
         tk.Label(self, text="⚙  PENGATURAN",
-                 font=("Courier New", 22, "bold"),
-                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(22, 10))
+                 font=("Courier New", 32, "bold"),
+                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(18, 8))
 
-        card = tk.Frame(self, bg=self.C_CARD, padx=50, pady=16)
+        card = tk.Frame(self, bg=self.C_CARD, padx=50, pady=12)
         card.grid(row=1, column=0, pady=4)
         card.columnconfigure(1, weight=1) 
 
         tk.Label(card, text="👤  Profil Pemain",
                  font=self.F_HEAD_S, bg=self.C_CARD, fg=self.C_ACC).grid(
-            row=0, column=0, columnspan=2, pady=(0, 8), sticky="w")
+            row=0, column=0, columnspan=2, pady=(0, 6), sticky="w")
 
         self._uname_lbl = tk.Label(card, text="Username: —",
                                    font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
-        self._uname_lbl.grid(row=1, column=0, columnspan=2, sticky="w", pady=2)
+        self._uname_lbl.grid(row=1, column=0, columnspan=2, sticky="w", pady=1)
 
         self._best_lbl = tk.Label(card, text="Skor Terbaik: —",
                                   font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
-        self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=2)
+        self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=1)
 
         self._lv_lbl = tk.Label(card, text="Level Tertinggi: —",
                                 font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
-        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=2)
+        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=1)
 
-        card2 = tk.Frame(self, bg=self.C_CARD, padx=50, pady=14)
+        card2 = tk.Frame(self, bg=self.C_CARD, padx=50, pady=10)
         card2.grid(row=2, column=0, pady=4) 
 
         tk.Label(card2, text="🎮  Kontrol",
                  font=self.F_HEAD_S, bg=self.C_CARD, fg=self.C_ACC).grid(
-            row=0, column=0, columnspan=2, pady=(0, 8), sticky="w")
+            row=0, column=0, columnspan=2, pady=(0, 6), sticky="w")
 
         controls = [
             ("Gerak",   "← → / A D"),
@@ -257,7 +258,7 @@ class SettingsScreen(BaseScreen):
                   width=22, pady=8, bg="#1e4d2b", fg=self.C_TXT,
                   relief="flat", cursor="hand2",
                   command=lambda: self.controller.show("MenuScreen")).grid(
-            row=3, column=0, pady=(14, 10))
+            row=3, column=0, pady=(12, 8))
     
     def on_show(self):
         u = self.controller.current_user
@@ -283,7 +284,7 @@ class SettingsScreen(BaseScreen):
 
 class App(tk.Tk):
     WIDTH  = 1280
-    HEIGHT = 768
+    HEIGHT = 720
 
     def __init__(self):
         super().__init__()
