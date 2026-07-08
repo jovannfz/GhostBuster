@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from jovan_db_auth   import AuthScreen, db_get_leaderboard, db_get_progress
-from ozy_game_screen import GameScreen, BaseScreen
+from jovan  import AuthScreen, db_get_leaderboard, db_get_progress
+from ozzy import GameScreen, BaseScreen
 
 # ══════════════════════════════════════════════════════════════════
 #  SCREEN — MENU UTAMA
@@ -131,8 +131,8 @@ class LeaderboardScreen(BaseScreen):
         tbl  = tk.Frame(self, bg=self.C_CARD)
         tbl.grid(row=2, column=0, padx=80)
 
-        headers = ["#",  "Username", "Skor", "Level", "Tanggal"]
-        col_w   = [4,    18,          12,      8,       18]
+        headers = ["#",  "Username", "Skor"]
+        col_w   = [4,    30,          16]
         for col, (h, w) in enumerate(zip(headers, col_w)):
             tk.Label(tbl, text=h, font=("Courier New", 11, "bold"),
                      bg="#1e3a5c", fg=self.C_ACC, width=w, pady=5).grid(
@@ -168,12 +168,11 @@ class LeaderboardScreen(BaseScreen):
             if i < len(data):
                 r   = data[i]
                 rank = medals[i] if i < 3 else str(i + 1)
-                vals = [rank, r["username"], f"{r['score']:,}",
-                        str(r["level_reached"]), r["tanggal"]]
+                vals = [rank, r["username"], f"{r['score']:,}"]
                 fg = (self.C_ACC if i == 0 else "#c0c0c0" if i == 1 else
                       "#cd7f32" if i == 2 else self.C_TXT)
             else:
-                vals = [str(i + 1), "—", "—", "—", "—"]
+                vals = [str(i + 1), "—", "—"]
                 fg   = self.C_MUT
             for lbl, val in zip(widgets, vals):
                 lbl.config(text=val, fg=fg)
@@ -275,7 +274,7 @@ class SettingsScreen(BaseScreen):
 # ══════════════════════════════════════════════════════════════════
 
 class App(tk.Tk):
-    WIDTH  = 1366
+    WIDTH  = 1280
     HEIGHT = 768
 
     def __init__(self):
@@ -333,4 +332,4 @@ if __name__ == "__main__":
                 "Pastikan MySQL sudah berjalan dan konfigurasi\n"
                 "DB_CONFIG di bagian atas file sudah benar.")
         except Exception:
-            pass  
+            pass 
