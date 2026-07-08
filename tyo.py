@@ -33,7 +33,7 @@ class MenuScreen(BaseScreen):
             ("▶  MULAI GAME",   self.C_PRI, "#000",     lambda: self.controller.show("GameScreen")),
             ("🏆  LEADERBOARD", self.C_ACC, "#000",     lambda: self.controller.show("LeaderboardScreen")),
             ("⚙  PENGATURAN",  "#1e4d2b",  self.C_TXT, lambda: self.controller.show("SettingsScreen")),
-            ("🚪  KELUAR",      self.C_DNG, "#fff",     self.controller.quit),
+            ("🚪  KELUAR",      self.C_DNG, "#fff",     self._logout),
         ]
         for i, (text, bg, fg, cmd) in enumerate(btns):
             tk.Button(self, text=text, font=self.F_HEAD, width=30,
@@ -46,7 +46,16 @@ class MenuScreen(BaseScreen):
     def on_show(self):
         u = self.controller.current_user
         if u:
-            self._welcome.config(value=f"Halo, {u['username']}! 👋")
+            # BUGFIX: StringVar pakai .set(), bukan .config(value=...)
+            # (sebelumnya ini bikin error tiap kali MenuScreen tampil
+            # untuk user yang sudah login).
+            self._welcome.set(f"Halo, {u['username']}! 👋")
+
+    def _logout(self):
+        # "KELUAR" sekarang berarti logout akun (kembali ke layar
+        # login/register), bukan menutup aplikasi.
+        self.controller.set_user(None)
+        self.controller.show("AuthScreen")
 
 # ══════════════════════════════════════════════════════════════════
 #  SCREEN — GAME OVER / VICTORY
