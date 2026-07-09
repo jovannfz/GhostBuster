@@ -255,6 +255,11 @@ class GameScreen(BaseScreen):
         self._legend.place_forget()
 
     def _show_hud(self):
+        # Border bawaan widget dipakai lagi saat kembali ke gameplay normal
+        # (layar overlay/transisi memakai border gambar sendiri, lihat
+        # _show_transition & _show_resume_choice, supaya garis birunya rapi
+        # mengelilingi seluruh gambar, bukan cuma sebagian sisi canvas).
+        self._cv.config(highlightthickness=2)
         if not self._hud.winfo_ismapped():
             self._hud.pack(fill="x", padx=14, pady=(8, 4), before=self._cv)
         self._btn_overlay.place(in_=self._cv, x=-10, y=-10, relx=1.0, rely=1.0, anchor="se")
@@ -423,8 +428,14 @@ class GameScreen(BaseScreen):
         prev_lv = self.lv_mgr.current - 1
         next_cfg = self.lv_mgr.cfg()
 
+        # Matikan border bawaan widget (sering terlihat cuma menutupi
+        # sebagian sisi saat HUD disembunyikan) dan gambar sendiri border
+        # birunya di atas canvas supaya rapi mengelilingi seluruh gambar.
+        c.config(highlightthickness=0)
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
+        c.create_rectangle(3, 3, CW - 3, CH - 3,
+                            outline=self.C_PRI, width=3)
         c.create_text(CW // 2, 100,
                       text=f"✅  Selamat! Level {prev_lv} Selesai!",
                       font=("Courier New", 32, "bold"), fill=self.C_PRI)
@@ -503,17 +514,23 @@ class GameScreen(BaseScreen):
         self._transition = True
         self._cancel()
 
+        # Matikan border bawaan widget dan gambar border biru sendiri di
+        # atas canvas, supaya bingkainya rapi mengelilingi seluruh gambar
+        # (sama seperti layar transisi level selesai).
+        c.config(highlightthickness=0)
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_text(CW // 2, 150,
+        c.create_rectangle(3, 3, CW - 3, CH - 3,
+                            outline=self.C_PRI, width=3)
+        c.create_text(CW // 2, 130,
                       text="🎮  Lanjutkan Permainan?",
                       font=("Courier New", 34, "bold"), fill=self.C_PRI)
-        c.create_text(CW // 2, 215,
+        c.create_text(CW // 2, 190,
                       text=(f"Progres tersimpan: Level {self._resume_level} "
                             f"— Skor {self._resume_score:,}"),
                       font=("Courier New", 18), fill=self.C_TXT)
 
-        bx1, by1, bx2, by2 = CW // 2 - 220, 290, CW // 2 + 220, 345
+        bx1, by1, bx2, by2 = CW // 2 - 220, 260, CW // 2 + 220, 315
         btn_resume = c.create_rectangle(bx1, by1, bx2, by2,
                                          fill=self.C_PRI, outline="", tags="btn_resume")
         c.create_text(CW // 2, (by1 + by2) // 2,
@@ -521,13 +538,21 @@ class GameScreen(BaseScreen):
                       font=("Courier New", 16, "bold"),
                       fill="#000", tags="btn_resume")
 
-        rx1, ry1, rx2, ry2 = CW // 2 - 220, 365, CW // 2 + 220, 420
+        rx1, ry1, rx2, ry2 = CW // 2 - 220, 335, CW // 2 + 220, 390
         btn_restart = c.create_rectangle(rx1, ry1, rx2, ry2,
                                           fill=self.C_DNG, outline="", tags="btn_restart")
         c.create_text(CW // 2, (ry1 + ry2) // 2,
                       text="🔄  Ulang dari Level 1",
                       font=("Courier New", 16, "bold"),
                       fill="#fff", tags="btn_restart")
+
+        mx1, my1, mx2, my2 = CW // 2 - 220, 410, CW // 2 + 220, 465
+        btn_menu = c.create_rectangle(mx1, my1, mx2, my2,
+                                       fill="#1e4d2b", outline="", tags="btn_menu2")
+        c.create_text(CW // 2, (my1 + my2) // 2,
+                      text="🏠  Kembali ke Menu",
+                      font=("Courier New", 16, "bold"),
+                      fill=self.C_TXT, tags="btn_menu2")
 
         c.tag_bind("btn_resume", "<Button-1>", lambda e: self._confirm_resume())
         c.tag_bind("btn_resume", "<Enter>",    lambda e: c.itemconfig(btn_resume, fill=self.C_ACC))
@@ -536,6 +561,10 @@ class GameScreen(BaseScreen):
         c.tag_bind("btn_restart", "<Button-1>", lambda e: self._confirm_restart())
         c.tag_bind("btn_restart", "<Enter>",    lambda e: c.itemconfig(btn_restart, fill="#ff7a9c"))
         c.tag_bind("btn_restart", "<Leave>",    lambda e: c.itemconfig(btn_restart, fill=self.C_DNG))
+
+        c.tag_bind("btn_menu2", "<Button-1>", lambda e: self._back_menu_from_resume_choice())
+        c.tag_bind("btn_menu2", "<Enter>",    lambda e: c.itemconfig(btn_menu, fill="#2e6d3b"))
+        c.tag_bind("btn_menu2", "<Leave>",    lambda e: c.itemconfig(btn_menu, fill="#1e4d2b"))
 
     def _confirm_resume(self):
         lvl   = self._resume_level
@@ -554,6 +583,16 @@ class GameScreen(BaseScreen):
         self._transition   = False
         self.lv_mgr.reset()
         self._init_level()
+
+    def _back_menu_from_resume_choice(self):
+        """Dipanggil saat pemain menekan 'Kembali ke Menu' di layar pilihan
+        lanjut/ulang. Progres tersimpan (_resume_level/_resume_score) TIDAK
+        dihapus, supaya saat GameScreen dibuka lagi pemain masih ditanya
+        mau lanjut atau mengulang."""
+        self._transition = False
+        self._running    = False
+        self._cancel()
+        self.controller.show("MenuScreen")
 
     def _game_end(self, won):
         self._running    = False
