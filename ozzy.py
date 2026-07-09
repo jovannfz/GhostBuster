@@ -91,19 +91,52 @@ def _draw_ghost(c, x, y, color, anim, hp, max_hp):
 
 
 def _draw_player(c, x, y, w, h, on_ground, frame):
-    c.create_oval(x + 2, y + h + 2, x + w - 2, y + h + 10, fill="#333", outline="")
-    c.create_oval(x, y, x + w, y + h // 2 + 8, fill="#e8e8f0", outline="#aaa", width=1)
-    pts = [x, y + h // 2 + 2, x, y + h]
-    for i in range(6):
-        bx = x + (i / 5) * w
-        bv = 6 if i % 2 == 0 else -6
-        pts += [bx, y + h + bv]
-    pts += [x + w, y + h // 2 + 2]
-    c.create_polygon(pts, fill="#e8e8f0", outline="")
-    c.create_rectangle(x + 6,  y + 5,  x + 12, y + 12, fill="#222", outline="")
-    c.create_rectangle(x + 18, y + 5,  x + 24, y + 12, fill="#222", outline="")
-    c.create_arc(x + 8, y + 12, x + 22, y + 20, start=200, extent=140,
-                 style="arc", outline="#444", width=2)
+    # bayangan
+    c.create_oval(x + 2, y + h + 2, x + w - 2, y + h + 8, fill="#111", outline="")
+
+    # animasi kaki jalan (goyang kalau di darat, lurus kalau melompat)
+    swing = math.sin(frame * 0.35) * 4 if on_ground else 0
+
+    leg_w = 6
+    leg_top = y + h * 0.68
+    # kaki kiri & kanan (celana gelap) + sepatu
+    c.create_rectangle(x + 4, leg_top + swing, x + 4 + leg_w, y + h - 2,
+                        fill="#22232e", outline="")
+    c.create_rectangle(x + w - 4 - leg_w, leg_top - swing, x + w - 4, y + h - 2,
+                        fill="#22232e", outline="")
+    c.create_rectangle(x + 3, y + h - 4, x + 5 + leg_w, y + h,
+                        fill="#111", outline="")
+    c.create_rectangle(x + w - 5 - leg_w, y + h - 4, x + w - 3, y + h,
+                        fill="#111", outline="")
+
+    # tas / tabung di punggung (ciri khas ghost hunter)
+    c.create_rectangle(x - 3, y + h * 0.34, x + 2, y + h * 0.62,
+                        fill="#5a5a66", outline="#33333c")
+
+    # badan / jaket
+    c.create_rectangle(x + 3, y + h * 0.30, x + w - 3, y + h * 0.70,
+                        fill="#3a5a8c", outline="#233f66", width=1)
+    c.create_rectangle(x + w // 2 - 2, y + h * 0.32, x + w // 2 + 2, y + h * 0.68,
+                        fill="#f9d423", outline="")  # resleting/aksen
+
+    # lengan
+    c.create_rectangle(x, y + h * 0.34, x + 4, y + h * 0.58,
+                        fill="#2e4a73", outline="")
+    c.create_rectangle(x + w - 4, y + h * 0.34, x + w, y + h * 0.58,
+                        fill="#2e4a73", outline="")
+
+    # kepala
+    c.create_oval(x + 5, y, x + w - 5, y + h * 0.32,
+                  fill="#f0c090", outline="#c89a6a", width=1)
+    # mata
+    c.create_rectangle(x + 8, y + h * 0.12, x + 11, y + h * 0.17, fill="#222", outline="")
+    c.create_rectangle(x + w - 11, y + h * 0.12, x + w - 8, y + h * 0.17, fill="#222", outline="")
+
+    # topi
+    c.create_arc(x + 3, y - 5, x + w - 3, y + h * 0.20,
+                 start=0, extent=180, fill="#cc3333", outline="")
+    c.create_rectangle(x + w - 8, y + h * 0.03, x + w + 2, y + h * 0.10,
+                        fill="#cc3333", outline="")
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -678,11 +711,6 @@ class GameScreen(BaseScreen):
             rx = px2 - camx
             if rx > CW + 20 or rx + pw < -20:
                 continue
-            # Lantai utama (platform sangat lebar) harus menepel sampai
-            # dasar canvas, bukan cuma setinggi `ph` -> sebelumnya ini
-            # menyisakan strip biru (warna bg canvas) di bawah lantai
-            # sehingga terlihat "mengambang". Platform kecil (pijakan
-            # melayang) tetap memakai tinggi aslinya.
             is_floor = pw > 1000
             eff_ph   = (CH - py2) if is_floor else ph
             c.create_rectangle(rx, py2, rx + pw, py2 + eff_ph, fill=t["platform"], outline="")
