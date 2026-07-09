@@ -4,9 +4,9 @@ import random
 
 
 LEVEL_CFG = {
-    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120, "hantu": 5,  "mult": 1.0},
-    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 9,  "mult": 1.5},
-    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 50,  "hantu": 14, "mult": 2.0},
+    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 60,  "hantu": 10, "mult": 1.0},
+    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 15, "mult": 1.5},
+    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 100, "hantu": 20, "mult": 2.0},
 }
 
 THEME = {
@@ -51,17 +51,13 @@ class ScoreManager:
         self.mult  = mult
         self.total = 0
 
-    def ghost_kill(self, base=100):
-        g = int(base * self.mult); self.total += g; return g
+    def ghost_kill(self, level=1):
+        g = level; self.total += g; return g
 
     def coin(self, level=1):
-        # Skor per koin mengikuti nomor level: Level 1 -> +1, Level 2 -> +2,
-        # Level 3 -> +3.
         g = level; self.total += g; return g
 
     def time_bonus(self, secs, level=1):
-        # Bonus waktu = sisa detik x nomor level yang baru diselesaikan.
-        # Level 1 -> x1, Level 2 -> x2, Level 3 -> x3.
         b = int(secs * level); self.total += b; return b
 
     def penalty(self, amt=50):
@@ -101,11 +97,9 @@ class PlayerPhysics:
         prev_x = self.x
         prev_y = self.y
 
-        # --- Gerak & tabrakan horizontal (nabrak sisi platform) ---
         self.x += self.vx
         self._collide_x(prev_x)
 
-        # --- Gerak & tabrakan vertikal (lompat dari bawah / mendarat di atas) ---
         self.y += self.vy
         self.on_ground = False
         self._collide_y(prev_y)
@@ -120,9 +114,9 @@ class PlayerPhysics:
         supaya tidak bisa tembus saat 'ditabrak' dari samping."""
         for px1, py1, px2, py2 in self.platforms:
             if px2 - px1 > 1000:
-                continue  # lantai utama (sangat lebar), sudah ditangani lewat GROUND_Y
+                continue
             if self.y + self.H <= py1 or self.y >= py2:
-                continue  # tidak ada overlap vertikal dengan platform ini
+                continue
 
             if self.vx > 0 and prev_x + self.W <= px1 and self.x + self.W > px1:
                 self.x  = px1 - self.W
@@ -136,17 +130,15 @@ class PlayerPhysics:
         saat melompat dari bawah mengenai bagian bawah platform (tidak tembus)."""
         for px1, py1, px2, py2 in self.platforms:
             if px2 - px1 > 1000:
-                continue  # lantai utama (sangat lebar), sudah ditangani lewat GROUND_Y
+                continue
             if self.x + self.W <= px1 or self.x >= px2:
-                continue  # tidak ada overlap horizontal dengan platform ini
+                continue
 
             if self.vy >= 0 and prev_y + self.H <= py1 and self.y + self.H > py1:
-                # jatuh & mendarat di atas platform -> jadi pijakan
                 self.y  = py1 - self.H
                 self.vy = 0
                 self.on_ground = True
             elif self.vy < 0 and prev_y >= py2 and self.y < py2:
-                # lompat dari bawah kena bagian bawah platform -> mentok, tidak tembus
                 self.y  = py2
                 self.vy = 0
 
