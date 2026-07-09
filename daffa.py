@@ -4,9 +4,9 @@ import random
 
 
 LEVEL_CFG = {
-    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 60,  "hantu": 10, "mult": 1.0},
-    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 80,  "hantu": 15, "mult": 1.5},
-    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 100, "hantu": 20, "mult": 2.0},
+    1: {"nama": "Easy",   "tema": "Hutan Siang",   "kecepatan": 2.5, "timer": 120,  "hantu": 10, "mult": 1.0},
+    2: {"nama": "Medium", "tema": "Kuburan Malam", "kecepatan": 4.0, "timer": 100,  "hantu": 15, "mult": 1.5},
+    3: {"nama": "Hard",   "tema": "Kastil Iblis",  "kecepatan": 6.5, "timer": 80, "hantu": 20, "mult": 2.0},
 }
 
 THEME = {
