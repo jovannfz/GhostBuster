@@ -46,19 +46,28 @@ class LevelManager:
 
 class ScoreManager:
     BASE_COIN = 50
+    BASE_GEM  = 100
+    TIME_UNIT = 5
 
     def __init__(self, mult=1.0):
         self.mult  = mult
         self.total = 0
 
-    def ghost_kill(self, level=1):
-        g = level; self.total += g; return g
+    def ghost_kill(self, ghost_score=100):
+        g = int(ghost_score * self.mult)
+        self.total += g
+        return g
 
-    def coin(self, level=1):
-        g = level; self.total += g; return g
+    def coin(self, gem=False):
+        base = self.BASE_GEM if gem else self.BASE_COIN
+        g = int(base * self.mult)
+        self.total += g
+        return g
 
     def time_bonus(self, secs, level=1):
-        b = int(secs * level); self.total += b; return b
+        b = int(secs * self.TIME_UNIT * level)
+        self.total += b
+        return b
 
     def penalty(self, amt=50):
         self.total = max(0, self.total - amt)
