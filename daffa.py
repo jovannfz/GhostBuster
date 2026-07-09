@@ -16,9 +16,9 @@ THEME = {
 }
 
 GHOST_TYPES = [
-    {"color": "#e8e8f0", "speed_mult": 1.0, "hp": 1, "score": 100, "name": "Normal"},
-    {"color": "#f8c0d8", "speed_mult": 1.6, "hp": 1, "score": 80,  "name": "Cepat"},
-    {"color": "#c0b0f0", "speed_mult": 0.6, "hp": 3, "score": 200, "name": "Kuat"},
+    {"color": "#f5f5f5", "speed_mult": 1.0, "hp": 1, "score": 100, "name": "Normal"},
+    {"color": "#f5f5f5", "speed_mult": 1.6, "hp": 1, "score": 80,  "name": "Cepat"},
+    {"color": "#f5f5f5", "speed_mult": 0.6, "hp": 3, "score": 200, "name": "Kuat"},
 ]
 
 GROUND_Y = 460   
