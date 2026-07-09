@@ -46,14 +46,9 @@ class MenuScreen(BaseScreen):
     def on_show(self):
         u = self.controller.current_user
         if u:
-            # BUGFIX: StringVar pakai .set(), bukan .config(value=...)
-            # (sebelumnya ini bikin error tiap kali MenuScreen tampil
-            # untuk user yang sudah login).
             self._welcome.set(f"Halo, {u['username']}! 👋")
 
     def _logout(self):
-        # "KELUAR" sekarang berarti logout akun (kembali ke layar
-        # login/register), bukan menutup aplikasi.
         self.controller.set_user(None)
         self.controller.show("AuthScreen")
 
@@ -72,37 +67,37 @@ class GameOverScreen(BaseScreen):
     def _build(self):
         self.columnconfigure(0, weight=1)
 
-        self._icon = tk.Label(self, text="💀", font=("Arial", 80), bg=self.BG)
-        self._icon.grid(row=0, column=0, pady=(90, 0))
+        self._icon = tk.Label(self, text="💀", font=("Arial", 56), bg=self.BG)
+        self._icon.grid(row=0, column=0, pady=(36, 0))
 
         self._title = tk.Label(self, text="GAME OVER",
-                               font=("Courier New", 44, "bold"),
+                               font=("Courier New", 32, "bold"),
                                bg=self.BG, fg=self.C_DNG)
-        self._title.grid(row=1, column=0, pady=(8, 28))
+        self._title.grid(row=1, column=0, pady=(6, 18))
 
-        card = tk.Frame(self, bg=self.C_CARD, padx=60, pady=32)
+        card = tk.Frame(self, bg=self.C_CARD, padx=50, pady=18)
         card.grid(row=2, column=0)
 
         self._sc_var = tk.StringVar(value="Skor Akhir: 0")
         self._lv_var = tk.StringVar(value="Level Tercapai: 1 / 3")
 
         tk.Label(card, textvariable=self._sc_var,
-                 font=("Courier New", 26, "bold"),
-                 bg=self.C_CARD, fg=self.C_ACC).pack(pady=4)
+                 font=("Courier New", 20, "bold"),
+                 bg=self.C_CARD, fg=self.C_ACC).pack(pady=3)
         tk.Label(card, textvariable=self._lv_var,
-                 font=self.F_HEAD, bg=self.C_CARD, fg=self.C_TXT).pack(pady=4)
+                 font=self.F_BODY, bg=self.C_CARD, fg=self.C_TXT).pack(pady=3)
 
-        btn = dict(font=self.F_HEAD, width=28, pady=12, relief="flat", cursor="hand2")
+        btn = dict(font=self.F_BODY, width=26, pady=9, relief="flat", cursor="hand2")
 
         tk.Button(self, text="🔄  MAIN LAGI",    bg=self.C_PRI, fg="#000",
                   command=lambda: self.controller.show("GameScreen"), **btn).grid(
-            row=3, column=0, pady=(36, 8))
+            row=3, column=0, pady=(20, 6))
         tk.Button(self, text="🏆  LEADERBOARD",  bg=self.C_ACC, fg="#000",
                   command=lambda: self.controller.show("LeaderboardScreen"), **btn).grid(
-            row=4, column=0, pady=5)
+            row=4, column=0, pady=6)
         tk.Button(self, text="🏠  MENU UTAMA",   bg="#1e4d2b", fg=self.C_TXT,
                   command=lambda: self.controller.show("MenuScreen"), **btn).grid(
-            row=5, column=0, pady=5)
+            row=5, column=0, pady=(6, 20))
 
     def set_result(self, score: int, level: int, victory: bool):
         self._score   = score
@@ -198,9 +193,6 @@ class SettingsScreen(BaseScreen):
         super().__init__(parent, controller)
         self._build()
 
-    # Font layar ini disesuaikan agar judul lebih terbaca namun semua
-    # konten (termasuk tombol "Kembali ke Menu") tetap muat dalam
-    # tinggi window 720px tanpa terpotong.
     F_HEAD_S = ("Courier New", 15, "bold")
     F_BODY_S = ("Courier New", 13)
     F_KEY_S  = ("Courier New", 12, "bold")
