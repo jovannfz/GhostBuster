@@ -45,27 +45,22 @@ class LevelManager:
 
 
 class ScoreManager:
-    BASE_COIN = 50
-    BASE_GEM  = 100
-    TIME_UNIT = 5
-
     def __init__(self, mult=1.0):
         self.mult  = mult
         self.total = 0
 
-    def ghost_kill(self, ghost_score=100):
-        g = int(ghost_score * self.mult)
+    def ghost_kill(self, level=1):
+        g = level
         self.total += g
         return g
 
-    def coin(self, gem=False):
-        base = self.BASE_GEM if gem else self.BASE_COIN
-        g = int(base * self.mult)
+    def coin(self, level=1):
+        g = 1
         self.total += g
         return g
 
     def time_bonus(self, secs, level=1):
-        b = int(secs * self.TIME_UNIT * level)
+        b = int(secs * level)
         self.total += b
         return b
 
@@ -193,11 +188,10 @@ class GhostAI:
 
 
 class CoinItem:
-    def __init__(self, x, y, gem=False):
+    def __init__(self, x, y):
         self.x      = float(x)
         self.y      = float(y)
         self.base_y = float(y)
-        self.gem    = gem
         self.taken  = False
         self.anim   = random.uniform(0, math.pi * 2)
 
