@@ -345,8 +345,7 @@ class GameScreen(BaseScreen):
                         g.hit()
                         self._parts.append(Particle(g.x, g.y, "#8ef", 10, 4))
                         if g.dead:
-                            self.sc_mgr.ghost_kill(self.lv_mgr.current)
-                            self.sc_mgr.coin(self.lv_mgr.current)
+                            self.sc_mgr.ghost_kill(g.cfg["score"])
                             self._parts.append(Particle(g.x, g.y, "#fff", 18, 5))
         self._projs = [p for p in self._projs if p.life > 0]
 
@@ -366,7 +365,7 @@ class GameScreen(BaseScreen):
                 cr = c.rect()
                 if self.player.collides(cr[0], cr[1], cr[2], cr[3]):
                     c.taken = True
-                    self.sc_mgr.coin(self.lv_mgr.current)
+                    self.sc_mgr.coin(c.gem)
                     color = "#4dffb0" if c.gem else "#ffd700"
                     self._parts.append(Particle(c.x, c.y, color, 8, 3))
 
@@ -619,8 +618,18 @@ class GameScreen(BaseScreen):
                 self._timer -= 1
                 self._tm_var.set(f"⏱ {self._timer}")
             else:
-                self._level_done(); return
+                self._time_up(); return
         self.after(1000, self._timer_tick)
+
+    def _time_up(self):
+        """Dipanggil saat waktu habis SEBELUM pemain mencapai finish.
+        Ini harus dianggap kalah (Game Over), bukan level selesai —
+        berbeda dengan _level_done() yang dipanggil saat pemain benar-benar
+        mencapai garis finish."""
+        self._running    = False
+        self._transition = True
+        self._cancel()
+        self._game_end(won=False)
 
     def _update_hud(self):
         cfg = self.lv_mgr.cfg()
