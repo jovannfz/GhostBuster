@@ -45,12 +45,15 @@ def _execute_query(query: str, params: tuple = (), fetch: bool = False):
 
 
 def db_register(username: str, password: str) -> dict:
+    errors = []
     existing = _execute_query(
         "SELECT id FROM users WHERE username=%s", (username,), fetch=True)
     if existing:
-        return {"success": False, "message": "Username sudah digunakan."}
+        errors.append("Username sudah digunakan.")
     if len(password) < 4:
-        return {"success": False, "message": "Password minimal 4 karakter."}
+        errors.append("Password harus terdiri dari 4 karakter.")
+    if errors:
+        return {"success": False, "message": " ".join(errors)}
     uid = _execute_query(
         "INSERT INTO users (username, password_hash) VALUES (%s,%s)",
         (username, password))
@@ -93,11 +96,6 @@ def db_get_progress(user_id: int):
     return rows[0] if rows else None
 
 class AuthScreen(tk.Frame):
-    """
-    Screen login dan register.
-    Dipanggil oleh App controller (dari ozy_app_controller.py).
-    Menggunakan db_login / db_register dari file ini.
-    """
     BG      = "#0a0f1e"
     C_PRI   = "#a8d8ff"
     C_ACC   = "#f9d423"
@@ -134,10 +132,13 @@ class AuthScreen(tk.Frame):
                                bg=self.C_CARD, fg=self.C_ACC)
         self._title.grid(row=0, column=0, columnspan=2, pady=(0, 18))
 
-        for lbl, row in [("Username", 1), ("Password", 3)]:
-            tk.Label(card, text=lbl, font=self.F_BODY,
-                     bg=self.C_CARD, fg=self.C_TXT).grid(
-                row=row, column=0, sticky="w", pady=3)
+        tk.Label(card, text="Username", font=self.F_BODY,
+                 bg=self.C_CARD, fg=self.C_TXT).grid(
+            row=1, column=0, sticky="w", pady=3)
+
+        self._pw_lbl = tk.Label(card, text="Password", font=self.F_BODY,
+                                bg=self.C_CARD, fg=self.C_TXT)
+        self._pw_lbl.grid(row=3, column=0, sticky="w", pady=3)
 
         entry_cfg = dict(font=self.F_BODY, width=32, bg="#060f1a",
                          fg=self.C_TXT, insertbackground="white",
@@ -181,6 +182,7 @@ class AuthScreen(tk.Frame):
             self._title.config(text="REGISTER")
             self._btn.config(text="DAFTAR")
             self._toggle.config(text="Sudah punya akun? Login di sini")
+            self._pw_lbl.config(text="Password (harus 4 karakter)")
             self._cf_lbl.grid(row=5, column=0, sticky="w", pady=3)
             self._cf_entry.grid(row=6, column=0, columnspan=2, ipady=6, pady=(0, 8))
         else:
@@ -188,6 +190,7 @@ class AuthScreen(tk.Frame):
             self._title.config(text="LOGIN")
             self._btn.config(text="MASUK")
             self._toggle.config(text="Belum punya akun? Daftar di sini")
+            self._pw_lbl.config(text="Password")
             self._cf_lbl.grid_remove()
             self._cf_entry.grid_remove()
 
