@@ -167,11 +167,10 @@ class LeaderboardScreen(BaseScreen):
         except Exception:
             data = []
 
-        medals = ["🥇", "🥈", "🥉"] + ["  "] * 7
         for i, widgets in enumerate(self._rows):
             if i < len(data):
                 r   = data[i]
-                rank = medals[i] if i < 3 else str(i + 1)
+                rank = str(i + 1)
                 vals = [rank, r["username"], f"{r['score']:,}"]
                 fg = (self.C_ACC if i == 0 else "#c0c0c0" if i == 1 else
                       "#cd7f32" if i == 2 else self.C_TXT)
