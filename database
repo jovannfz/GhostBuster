@@ -37,15 +37,3 @@ CREATE TABLE IF NOT EXISTS game_progress (
                              ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
-INSERT INTO levels
-    (id, nama, tema, kecepatan, timer_detik, jumlah_hantu, multiplier_skor, deskripsi)
-VALUES
-    (1, 'Easy',   'Hutan Siang',   2.5, 120, 5,  1.0, 'Hutan tenang, sedikit hantu, waktu longgar.'),
-    (2, 'Medium', 'Kuburan Malam', 4.0, 80,  9,  1.5, 'Kuburan gelap, hantu lebih banyak dan cepat.'),
-    (3, 'Hard',   'Kastil Iblis',  6.5, 50,  14, 2.0, 'Kastil misterius, hantu sangat cepat & agresif, penalty salah.')
-ON DUPLICATE KEY UPDATE
-    kecepatan=VALUES(kecepatan),
-    timer_detik=VALUES(timer_detik),
-    jumlah_hantu=VALUES(jumlah_hantu),
-    multiplier_skor=VALUES(multiplier_skor);
