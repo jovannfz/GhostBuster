@@ -49,19 +49,19 @@ COIN_POS = [
 
 GHOST_POS = [
     (420, 300, 0),
-    (550, 432, 1),   # NEW - hantu di tanah
+    (550, 432, 1),
     (680, 250, 1), (900, 250, 0),
-    (1050, 432, 0),  # NEW - hantu di tanah
+    (1050, 432, 0),
     (1180, 240, 2),
     (1380, 240, 0),
-    (1550, 432, 2),  # NEW - hantu di tanah
+    (1550, 432, 2),
     (1700, 200, 1),(1960, 260, 0),
-    (2050, 432, 1),  # NEW - hantu di tanah
+    (2050, 432, 1),
     (2240, 170, 2),
     (2500, 240, 0),
-    (2650, 432, 0),  # NEW - hantu di tanah
+    (2650, 432, 0),
     (2760, 240, 1),(3020, 160, 0),
-    (3150, 432, 2),  # NEW - hantu di tanah
+    (3150, 432, 2),
     (3260, 230, 2),
     (3480, 150, 1),(3550, 200, 0),
 ]
@@ -345,7 +345,7 @@ class GameScreen(BaseScreen):
                         g.hit()
                         self._parts.append(Particle(g.x, g.y, "#8ef", 10, 4))
                         if g.dead:
-                            self.sc_mgr.ghost_kill(g.cfg["score"])
+                            self.sc_mgr.ghost_kill(self.lv_mgr.current)
                             self.sc_mgr.coin(self.lv_mgr.current)
                             self._parts.append(Particle(g.x, g.y, "#fff", 18, 5))
         self._projs = [p for p in self._projs if p.life > 0]
@@ -408,7 +408,9 @@ class GameScreen(BaseScreen):
             try:
                 db_save_score(user["id"], self.sc_mgr.total, self.lv_mgr.current)
             except Exception:
-                pass
+                import traceback
+                print("Gagal menyimpan skor ke database:")
+                traceback.print_exc()
 
     def _show_transition(self, bonus):
         self._hide_hud()
@@ -668,6 +670,11 @@ class GameScreen(BaseScreen):
             rx = px2 - camx
             if rx > CW + 20 or rx + pw < -20:
                 continue
+            # Lantai utama (platform sangat lebar) harus menepel sampai
+            # dasar canvas, bukan cuma setinggi `ph` -> sebelumnya ini
+            # menyisakan strip biru (warna bg canvas) di bawah lantai
+            # sehingga terlihat "mengambang". Platform kecil (pijakan
+            # melayang) tetap memakai tinggi aslinya.
             is_floor = pw > 1000
             eff_ph   = (CH - py2) if is_floor else ph
             c.create_rectangle(rx, py2, rx + pw, py2 + eff_ph, fill=t["platform"], outline="")
