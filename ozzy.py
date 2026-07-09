@@ -84,10 +84,6 @@ def _draw_ghost(c, x, y, color, anim, hp, max_hp):
     c.create_polygon(pts, fill=color, outline="")
     c.create_rectangle(x - 11, y - 14, x - 5,  y - 7,  fill="#222", outline="")
     c.create_rectangle(x + 5,  y - 14, x + 11, y - 7,  fill="#222", outline="")
-    if max_hp > 1:
-        c.create_rectangle(x - 18, y - 32, x + 18, y - 27, fill="#c00", outline="")
-        fw = int(36 * hp / max_hp)
-        c.create_rectangle(x - 18, y - 32, x - 18 + fw, y - 27, fill="#3f3", outline="")
 
 
 def _draw_player(c, x, y, w, h, on_ground, frame):
@@ -711,6 +707,11 @@ class GameScreen(BaseScreen):
             rx = px2 - camx
             if rx > CW + 20 or rx + pw < -20:
                 continue
+            # Lantai utama (platform sangat lebar) harus menepel sampai
+            # dasar canvas, bukan cuma setinggi `ph` -> sebelumnya ini
+            # menyisakan strip biru (warna bg canvas) di bawah lantai
+            # sehingga terlihat "mengambang". Platform kecil (pijakan
+            # melayang) tetap memakai tinggi aslinya.
             is_floor = pw > 1000
             eff_ph   = (CH - py2) if is_floor else ph
             c.create_rectangle(rx, py2, rx + pw, py2 + eff_ph, fill=t["platform"], outline="")
