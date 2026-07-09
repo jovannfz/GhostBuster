@@ -1,4 +1,3 @@
-import sys
 from tkinter import messagebox
 
 from tyo import App
