@@ -220,10 +220,6 @@ class SettingsScreen(BaseScreen):
                                   font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
         self._best_lbl.grid(row=2, column=0, columnspan=2, sticky="w", pady=1)
 
-        self._lv_lbl = tk.Label(card, text="Level Tertinggi: —",
-                                font=self.F_BODY_S, bg=self.C_CARD, fg=self.C_TXT)
-        self._lv_lbl.grid(row=3, column=0, columnspan=2, sticky="w", pady=1)
-
         card2 = tk.Frame(self, bg=self.C_CARD, padx=50, pady=10)
         card2.grid(row=2, column=0, pady=4) 
 
@@ -260,15 +256,10 @@ class SettingsScreen(BaseScreen):
             prog = db_get_progress(u["id"])
             if prog:
                 self._best_lbl.config(text=f"Skor Terbaik: {prog['skor_terbaik']:,}")
-                names = {1: "Easy", 2: "Medium", 3: "Hard"}
-                lv = prog["level_tercapai"]
-                self._lv_lbl.config(text=f"Level Tertinggi: {lv} — {names.get(lv, '?')}")
             else:
                 self._best_lbl.config(text="Skor Terbaik: 0")
-                self._lv_lbl.config(text="Level Tertinggi: 1 — Easy")
         except Exception:
             self._best_lbl.config(text="Skor Terbaik: (DB tidak konek)")
-            self._lv_lbl.config(text="—")
 
 # ══════════════════════════════════════════════════════════════════
 #  APP CONTROLLER — ENTRY POINT
