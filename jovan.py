@@ -1,5 +1,4 @@
 import tkinter as tk
-import hashlib
 
 try:
     import mysql.connector
@@ -45,9 +44,6 @@ def _execute_query(query: str, params: tuple = (), fetch: bool = False):
         conn.close()
 
 
-def _hash_pw(pw: str) -> str:
-    return hashlib.sha256(pw.encode()).hexdigest()
-
 def db_register(username: str, password: str) -> dict:
     existing = _execute_query(
         "SELECT id FROM users WHERE username=%s", (username,), fetch=True)
@@ -57,7 +53,7 @@ def db_register(username: str, password: str) -> dict:
         return {"success": False, "message": "Password minimal 4 karakter."}
     uid = _execute_query(
         "INSERT INTO users (username, password_hash) VALUES (%s,%s)",
-        (username, _hash_pw(password)))
+        (username, password))
     _execute_query("INSERT INTO game_progress (user_id) VALUES (%s)", (uid,))
     return {"success": True, "message": "Registrasi berhasil!", "user_id": uid}
 
@@ -65,7 +61,7 @@ def db_register(username: str, password: str) -> dict:
 def db_login(username: str, password: str) -> dict:
     rows = _execute_query(
         "SELECT id, username FROM users WHERE username=%s AND password_hash=%s",
-        (username, _hash_pw(password)), fetch=True)
+        (username, password), fetch=True)
     if rows:
         return {"success": True, "user": rows[0]}
     return {"success": False, "message": "Username atau password salah."}
