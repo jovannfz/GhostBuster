@@ -135,11 +135,11 @@ class LeaderboardScreen(BaseScreen):
         tbl  = tk.Frame(self, bg=self.C_CARD)
         tbl.grid(row=2, column=0, padx=80)
 
-        headers = ["#",  "Username", "Skor"]
+        headers = ["Rank",  "Username", "Skor"]
         col_w   = [4,    30,          16]
         for col, (h, w) in enumerate(zip(headers, col_w)):
             tk.Label(tbl, text=h, font=("Courier New", 11, "bold"),
-                     bg="#1e3a5c", fg=self.C_ACC, width=w, pady=5).grid(
+                     bg="#1e3a5c", fg="#ffffff", width=w, pady=5).grid(
                 row=0, column=col, padx=1, pady=(0, 2), sticky="ew")
 
         self._rows = []
