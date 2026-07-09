@@ -122,10 +122,15 @@ class AuthScreen(tk.Frame):
 
         tk.Label(self, text="Bust ghosts. Save the night.",
                  font=("Courier New", 16), bg=self.BG, fg=self.C_MUT).grid(
-            row=1, column=0, pady=(0, 28))
+            row=1, column=0, pady=(0, 12))
+
+        self._msg = tk.StringVar()
+        tk.Label(self, textvariable=self._msg, font=self.F_SM,
+                 bg=self.BG, fg=self.C_DNG, wraplength=500).grid(
+            row=2, column=0, pady=(0, 6))
 
         card = tk.Frame(self, bg=self.C_CARD, padx=70, pady=44)
-        card.grid(row=2, column=0)
+        card.grid(row=3, column=0)
 
         self._title = tk.Label(card, text="LOGIN",
                                font=("Courier New", 22, "bold"),
@@ -169,11 +174,6 @@ class AuthScreen(tk.Frame):
                                 fg=self.C_ACC, cursor="hand2")
         self._toggle.grid(row=8, column=0, columnspan=2)
         self._toggle.bind("<Button-1>", lambda e: self._switch())
-
-        self._msg = tk.StringVar()
-        tk.Label(self, textvariable=self._msg, font=self.F_SM,
-                 bg=self.BG, fg=self.C_DNG, wraplength=400).grid(
-            row=3, column=0, pady=(8, 0))
 
     def _switch(self):
         self._msg.set("")
