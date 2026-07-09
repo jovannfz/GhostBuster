@@ -4,11 +4,6 @@ from tkinter import messagebox
 from tyo import App
 
 def main():
-    """
-    File entry point utama untuk menjalankan game GhostBusters.
-    File ini memanggil App controller dari tyo.py yang secara otomatis
-    merangkai sistem login Jovan, gameplay Ozzy, dan menu-menu Daffa.
-    """
     try:
         app = App()
         app.mainloop()
