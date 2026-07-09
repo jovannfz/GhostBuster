@@ -48,9 +48,6 @@ COIN_POS = [
 ]
 
 GHOST_POS = [
-    # Hantu tambahan (y ~432) ditaruh sejajar tanah, di sela-sela hantu
-    # yang sudah ada di platform atas -> pemain harus lompat/tembak dari
-    # bawah juga, bikin levelnya sedikit lebih susah.
     (420, 300, 0),
     (550, 432, 1),   # NEW - hantu di tanah
     (680, 250, 1), (900, 250, 0),
@@ -166,8 +163,6 @@ class GameScreen(BaseScreen):
         self._build_ui()
 
     def _build_ui(self):
-        # HUD: Level, Skor, dan Waktu dikelompokkan berdekatan di kiri,
-        # nyawa (HP) di kanan -> tidak lagi tersebar jauh di lebar layar.
         hud = tk.Frame(self, bg=self.BG)
         hud.pack(fill="x", padx=14, pady=(8, 4))
         self._hud = hud
@@ -195,16 +190,12 @@ class GameScreen(BaseScreen):
                              highlightbackground=self.C_PRI)
         self._cv.pack(padx=14, pady=(0, 4))
 
-        # Legend kontrol -> overlay kecil di pojok kiri-bawah canvas
-        # (bukan baris terpisah di bawah canvas), supaya tetap muat di
-        # tinggi window 768px.
         self._legend = tk.Label(
             self, text="Arrow/WASD Gerak | Space/W/↑ Lompat | Z/X/J Tembak",
             font=("Courier New", 10), bg="#0d1a2e", fg="#8899aa",
             padx=6, pady=2)
         self._legend.place(in_=self._cv, x=10, y=-10, rely=1.0, anchor="sw")
 
-        # Tombol Pause & Menu -> overlay berdekatan di pojok kanan-bawah canvas.
         self._btn_overlay = tk.Frame(self._cv, bg="#0d1a2e")
         self._pause_btn = tk.Button(self._btn_overlay, text="⏸ Pause",
                                     font=self.F_SM, bg=self.C_ACC, fg="#000",
@@ -255,10 +246,6 @@ class GameScreen(BaseScreen):
         self._legend.place_forget()
 
     def _show_hud(self):
-        # Border bawaan widget dipakai lagi saat kembali ke gameplay normal
-        # (layar overlay/transisi memakai border gambar sendiri, lihat
-        # _show_transition & _show_resume_choice, supaya garis birunya rapi
-        # mengelilingi seluruh gambar, bukan cuma sebagian sisi canvas).
         self._cv.config(highlightthickness=2)
         if not self._hud.winfo_ismapped():
             self._hud.pack(fill="x", padx=14, pady=(8, 4), before=self._cv)
@@ -359,6 +346,7 @@ class GameScreen(BaseScreen):
                         self._parts.append(Particle(g.x, g.y, "#8ef", 10, 4))
                         if g.dead:
                             self.sc_mgr.ghost_kill(g.cfg["score"])
+                            self.sc_mgr.coin(self.lv_mgr.current)
                             self._parts.append(Particle(g.x, g.y, "#fff", 18, 5))
         self._projs = [p for p in self._projs if p.life > 0]
 
@@ -428,13 +416,12 @@ class GameScreen(BaseScreen):
         prev_lv = self.lv_mgr.current - 1
         next_cfg = self.lv_mgr.cfg()
 
-        # Matikan border bawaan widget (sering terlihat cuma menutupi
-        # sebagian sisi saat HUD disembunyikan) dan gambar sendiri border
-        # birunya di atas canvas supaya rapi mengelilingi seluruh gambar.
         c.config(highlightthickness=0)
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_rectangle(3, 3, CW - 3, CH - 3,
+        BORDER_MARGIN = 24
+        c.create_rectangle(BORDER_MARGIN, BORDER_MARGIN,
+                            CW - BORDER_MARGIN, CH - BORDER_MARGIN,
                             outline=self.C_PRI, width=3)
         c.create_text(CW // 2, 100,
                       text=f"✅  Selamat! Level {prev_lv} Selesai!",
@@ -449,8 +436,6 @@ class GameScreen(BaseScreen):
                       text="Skor sekarang: " + f"{self.sc_mgr.total:,}",
                       font=("Courier New", 18), fill=self.C_TXT)
 
-        # Tombol atas: lanjut ke level berikutnya (lebar penuh, ditumpuk
-        # vertikal supaya teks panjang tidak meluber/tertutup tombol lain)
         bx1, by1, bx2, by2 = CW // 2 - 260, 335, CW // 2 + 260, 395
         btn_rect = c.create_rectangle(bx1, by1, bx2, by2,
                                        fill=self.C_PRI, outline="", tags="btn_next")
@@ -459,7 +444,6 @@ class GameScreen(BaseScreen):
                       font=("Courier New", 16, "bold"),
                       fill="#000", tags="btn_next")
 
-        # Tombol bawah: kembali ke menu utama
         mx1, my1, mx2, my2 = CW // 2 - 260, 410, CW // 2 + 260, 470
         btn_menu = c.create_rectangle(mx1, my1, mx2, my2,
                                        fill="#1e4d2b", outline="", tags="btn_menu")
@@ -514,13 +498,12 @@ class GameScreen(BaseScreen):
         self._transition = True
         self._cancel()
 
-        # Matikan border bawaan widget dan gambar border biru sendiri di
-        # atas canvas, supaya bingkainya rapi mengelilingi seluruh gambar
-        # (sama seperti layar transisi level selesai).
         c.config(highlightthickness=0)
         c.delete("all")
         c.create_rectangle(0, 0, CW, CH, fill="#0a0f1e")
-        c.create_rectangle(3, 3, CW - 3, CH - 3,
+        BORDER_MARGIN = 24
+        c.create_rectangle(BORDER_MARGIN, BORDER_MARGIN,
+                            CW - BORDER_MARGIN, CH - BORDER_MARGIN,
                             outline=self.C_PRI, width=3)
         c.create_text(CW // 2, 130,
                       text="🎮  Lanjutkan Permainan?",
@@ -598,13 +581,8 @@ class GameScreen(BaseScreen):
         self._running    = False
         self._transition = False
         self._cancel()
-        # Game benar-benar selesai (menang/kalah) -> bersihkan progres
-        # tersimpan supaya "Main Lagi" berikutnya mulai dari skor 0 /
-        # Level 1, bukan melanjutkan skor game sebelumnya.
         self._resume_level = None
         self._resume_score = 0
-        # Leaderboard hanya untuk pemain yang benar-benar menyelesaikan
-        # seluruh 3 level (menang). Kalah di tengah jalan tidak dicatat.
         if won:
             self._save_score_checkpoint()
         self.controller.frames["GameOverScreen"].set_result(
@@ -690,11 +668,6 @@ class GameScreen(BaseScreen):
             rx = px2 - camx
             if rx > CW + 20 or rx + pw < -20:
                 continue
-            # Lantai utama (platform sangat lebar) harus menepel sampai
-            # dasar canvas, bukan cuma setinggi `ph` -> sebelumnya ini
-            # menyisakan strip biru (warna bg canvas) di bawah lantai
-            # sehingga terlihat "mengambang". Platform kecil (pijakan
-            # melayang) tetap memakai tinggi aslinya.
             is_floor = pw > 1000
             eff_ph   = (CH - py2) if is_floor else ph
             c.create_rectangle(rx, py2, rx + pw, py2 + eff_ph, fill=t["platform"], outline="")
