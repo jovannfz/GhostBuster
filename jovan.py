@@ -117,30 +117,32 @@ class AuthScreen(tk.Frame):
         self.columnconfigure(0, weight=1)
 
         tk.Label(self, text="👻  GHOSTBUSTERS  👻",
-                 font=("Courier New", 26, "bold"),
-                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(50, 4))
+                 font=("Courier New", 28, "bold"),
+                 bg=self.BG, fg=self.C_PRI).grid(row=0, column=0, pady=(55, 5))
 
         tk.Label(self, text="Bust ghosts. Save the night.",
-                 font=("Courier New", 14), bg=self.BG, fg=self.C_MUT).grid(
-            row=1, column=0, pady=(0, 18))
+                 font=("Courier New", 15), bg=self.BG, fg=self.C_MUT).grid(
+            row=1, column=0, pady=(0, 20))
 
-        card = tk.Frame(self, bg=self.C_CARD, padx=36, pady=20)
+        card = tk.Frame(self, bg=self.C_CARD, padx=48, pady=26)
         card.grid(row=2, column=0)
 
+        F_LBL = ("Courier New", 13)
+
         self._title = tk.Label(card, text="LOGIN",
-                               font=("Courier New", 18, "bold"),
+                               font=("Courier New", 20, "bold"),
                                bg=self.C_CARD, fg=self.C_ACC)
-        self._title.grid(row=0, column=0, columnspan=2, pady=(0, 10))
+        self._title.grid(row=0, column=0, columnspan=2, pady=(0, 12))
 
-        tk.Label(card, text="Username", font=self.F_SM,
+        tk.Label(card, text="Username", font=F_LBL,
                  bg=self.C_CARD, fg=self.C_TXT).grid(
-            row=1, column=0, sticky="w", pady=2)
+            row=1, column=0, sticky="w", pady=3)
 
-        self._pw_lbl = tk.Label(card, text="Password", font=self.F_SM,
+        self._pw_lbl = tk.Label(card, text="Password", font=F_LBL,
                                 bg=self.C_CARD, fg=self.C_TXT)
-        self._pw_lbl.grid(row=3, column=0, sticky="w", pady=2)
+        self._pw_lbl.grid(row=3, column=0, sticky="w", pady=3)
 
-        entry_cfg = dict(font=self.F_SM, width=26, bg="#060f1a",
+        entry_cfg = dict(font=F_LBL, width=28, bg="#060f1a",
                          fg=self.C_TXT, insertbackground="white",
                          relief="flat", highlightthickness=1,
                          highlightbackground=self.C_PRI)
@@ -150,19 +152,19 @@ class AuthScreen(tk.Frame):
         self._cf_var   = tk.StringVar()
 
         tk.Entry(card, textvariable=self._user_var, **entry_cfg).grid(
-            row=2, column=0, columnspan=2, ipady=4, pady=(0, 5))
+            row=2, column=0, columnspan=2, ipady=5, pady=(0, 6))
         self._pw_entry = tk.Entry(card, textvariable=self._pw_var, show="•", **entry_cfg)
-        self._pw_entry.grid(row=4, column=0, columnspan=2, ipady=4, pady=(0, 5))
+        self._pw_entry.grid(row=4, column=0, columnspan=2, ipady=5, pady=(0, 6))
 
         self._cf_lbl   = tk.Label(card, text="Konfirmasi Password",
-                                  font=self.F_SM, bg=self.C_CARD, fg=self.C_TXT)
+                                  font=F_LBL, bg=self.C_CARD, fg=self.C_TXT)
         self._cf_entry = tk.Entry(card, textvariable=self._cf_var, show="•", **entry_cfg)
 
         self._btn = tk.Button(card, text="MASUK",
-                              font=("Courier New", 15, "bold"), bg=self.C_PRI, fg="#000",
-                              relief="flat", cursor="hand2", width=22, pady=6,
+                              font=("Courier New", 17, "bold"), bg=self.C_PRI, fg="#000",
+                              relief="flat", cursor="hand2", width=24, pady=8,
                               command=self._action)
-        self._btn.grid(row=7, column=0, columnspan=2, pady=(10, 6))
+        self._btn.grid(row=7, column=0, columnspan=2, pady=(12, 7))
 
         self._toggle = tk.Label(card, text="Belum punya akun? Daftar di sini",
                                 font=self.F_SM, bg=self.C_CARD,
