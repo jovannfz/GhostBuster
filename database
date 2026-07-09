@@ -1,0 +1,51 @@
+USE ghostbusters_db;
+
+CREATE TABLE IF NOT EXISTS users (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    username        VARCHAR(50)  NOT NULL UNIQUE,
+    password_hash   VARCHAR(255) NOT NULL,
+    tanggal_daftar  DATETIME     DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS scores (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT  NOT NULL,
+    score           INT  NOT NULL DEFAULT 0,
+    level_reached   INT  NOT NULL DEFAULT 1,
+    waktu_bermain   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS levels (
+    id              INT PRIMARY KEY,
+    nama            VARCHAR(50)  NOT NULL,
+    tema            VARCHAR(100) NOT NULL,
+    kecepatan       FLOAT        NOT NULL,
+    timer_detik     INT          NOT NULL,
+    jumlah_hantu    INT          NOT NULL,
+    multiplier_skor FLOAT        NOT NULL DEFAULT 1.0,
+    deskripsi       TEXT
+);
+
+CREATE TABLE IF NOT EXISTS game_progress (
+    id              INT AUTO_INCREMENT PRIMARY KEY,
+    user_id         INT  NOT NULL UNIQUE,
+    level_tercapai  INT  NOT NULL DEFAULT 1,
+    skor_terbaik    INT  NOT NULL DEFAULT 0,
+    total_koin      INT  NOT NULL DEFAULT 0,
+    updated_at      DATETIME DEFAULT CURRENT_TIMESTAMP
+                             ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+INSERT INTO levels
+    (id, nama, tema, kecepatan, timer_detik, jumlah_hantu, multiplier_skor, deskripsi)
+VALUES
+    (1, 'Easy',   'Hutan Siang',   2.5, 120, 5,  1.0, 'Hutan tenang, sedikit hantu, waktu longgar.'),
+    (2, 'Medium', 'Kuburan Malam', 4.0, 80,  9,  1.5, 'Kuburan gelap, hantu lebih banyak dan cepat.'),
+    (3, 'Hard',   'Kastil Iblis',  6.5, 50,  14, 2.0, 'Kastil misterius, hantu sangat cepat & agresif, penalty salah.')
+ON DUPLICATE KEY UPDATE
+    kecepatan=VALUES(kecepatan),
+    timer_detik=VALUES(timer_detik),
+    jumlah_hantu=VALUES(jumlah_hantu),
+    multiplier_skor=VALUES(multiplier_skor);
